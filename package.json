@@ -6,9 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "type": "module",
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@supabase/supabase-js": "^2.43.2"
+    "@supabase/supabase-js": "^2.43.2",
+    "express": "^4.19.2"
   }
 }

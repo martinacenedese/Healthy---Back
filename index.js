@@ -30,11 +30,11 @@ async function uploadFileToSupabase(bucketName, fileBuffer, fileName, contentTyp
         }
 
         // Return the public URL of the uploaded file
-        const { publicURL } = supabase.storage.from(bucketName).getPublicUrl(fileName);
-        return publicURL;
+        const publicURL = await supabase.storage.from(bucketName).createSignedUrl(fileName,31536000000);
+        return publicURL.data.signedUrl;
     } catch (error) {
         console.error('Error uploading file to Supabase:', error);
-        return null;
+
     }
 }
 app.get('/estudios', async (req,res)=> {
@@ -67,9 +67,7 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
   
     const publicURL = await uploadFileToSupabase(bucketName, file.buffer, uniqueFileName, file.mimetype);
   
-    if (!publicURL) {
-      return res.status(500).send('Error uploading file.');
-    }
+
   
     res.send(`File uploaded successfully. URL: ${publicURL}`);
         // try {

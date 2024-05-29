@@ -7,7 +7,7 @@ Content-Type: application/json
     "ok":"fs"
 }       
 
-### 
+###              
 POST http://localhost:3000/estudio
 Content-Type: multipart/form-data; boundary=boundary
 

@@ -46,6 +46,10 @@ app.get('/estudios', async (req,res)=> {
     await res.send(data);
 })
 
+app.get('/', (req, res) =>
+    res.send("HOLA VERCEL"));
+
+
 //async function uploadFile(file) {
     //const { data, error } = await supabase.storage.from('estudios_bucket').upload('60fa9175a0672.jpeg', file)
     //if (error) {

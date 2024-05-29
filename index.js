@@ -14,7 +14,29 @@ app.use(express.json());
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
+async function uploadFileToSupabase(bucketName, fileBuffer, fileName, contentType) {
+    try {
+        const { data, error } = await supabase.storage
+            .from(bucketName)
+            .upload(fileName, fileBuffer, {
+                cacheControl: '3600',
+                upsert: false,
+                contentType: contentType,
+            });
 
+        if (error) {
+            console.error('Error uploading file:', error.message);
+            return null;
+        }
+
+        // Return the public URL of the uploaded file
+        const { publicURL } = supabase.storage.from(bucketName).getPublicUrl(fileName);
+        return publicURL;
+    } catch (error) {
+        console.error('Error uploading file to Supabase:', error);
+        return null;
+    }
+}
 app.get('/estudios', async (req,res)=> {
     
     const { data, error } = await supabase
@@ -34,25 +56,41 @@ app.get('/estudios', async (req,res)=> {
   //}
 
 app.post('/estudio', upload.single('file'), async (req, res) => {
-        try {
-          // Upload file to Supabase bucket
-          const file = await fs.readFile('descarga (4).jpg');
-          const { data, error } = await supabase.storage
-            .from('estudios_bucket') 
-            .upload("messi", file.buffer);
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).send('No file uploaded.');
+    }
+  
+    const bucketName = 'estudios_bucket';
+    const uniqueFileName = `${uuidv4()}-${file.originalname}`; // Generate a unique file name
+  
+    const publicURL = await uploadFileToSupabase(bucketName, file.buffer, uniqueFileName, file.mimetype);
+  
+    if (!publicURL) {
+      return res.status(500).send('Error uploading file.');
+    }
+  
+    res.send(`File uploaded successfully. URL: ${publicURL}`);
+        // try {
+        //   // Upload file to Supabase bucket
+        //   const file = await fs.readFile('descarga (4).jpg');
+        //   const { data, error } = await supabase.storage
+        //     .from('estudios_bucket') 
+        //     .upload("messi", file.buffer);
       
-          if (error) {
-            throw error;
-          }
+        //   if (error) {
+        //     throw error;
+        //   }
       
-          // Get URL of the uploaded file
-          const fileUrl = data.Key;
+        //   // Get URL of the uploaded file
+        //   const fileUrl = data.Key;
       
-          res.send('File uploaded successfully. URL: ${fileUrl}');
-        } catch (error) {
-          console.error('Error uploading file:', error.message);
-          res.status(500).send('Error uploading file');
-        }
+        //   res.send('File uploaded successfully. URL: ${fileUrl}');
+        // } catch (error) {
+        //   console.error('Error uploading file:', error.message);
+        //   res.status(500).send('Error uploading file');
+        // }
       });
     //const file  = fs.readFile;
     

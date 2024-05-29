@@ -5,4 +5,15 @@ Content-Type: application/json
 
 {
     "ok":"fs"
-}     
+}       
+
+### 
+POST http://localhost:3000/estudio
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="descarga(4).jpg"
+Content-Type: image/jpeg
+
+< ./descarga (4).jpg
+--boundary--

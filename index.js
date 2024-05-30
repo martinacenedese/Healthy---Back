@@ -46,19 +46,6 @@ app.get('/estudios', async (req,res)=> {
     await res.send(data);
 })
 
-app.get('/', (req, res) =>
-    res.send("HOLA VERCEL"));
-
-
-//async function uploadFile(file) {
-    //const { data, error } = await supabase.storage.from('estudios_bucket').upload('60fa9175a0672.jpeg', file)
-    //if (error) {
-       // console.error('Error uploading file:', error.message);
-    //} else {
-      // Handle success
-    //}
-  //}
-
 app.post('/estudio', upload.single('file'), async (req, res) => {
     const file = req.file;
 
@@ -74,66 +61,10 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
 
   
     res.send(`File uploaded successfully. URL: ${publicURL}`);
-        // try {
-        //   // Upload file to Supabase bucket
-        //   const file = await fs.readFile('descarga (4).jpg');
-        //   const { data, error } = await supabase.storage
-        //     .from('estudios_bucket') 
-        //     .upload("messi", file.buffer);
-      
-        //   if (error) {
-        //     throw error;
-        //   }
-      
-        //   // Get URL of the uploaded file
-        //   const fileUrl = data.Key;
-      
-        //   res.send('File uploaded successfully. URL: ${fileUrl}');
-        // } catch (error) {
-        //   console.error('Error uploading file:', error.message);
-        //   res.status(500).send('Error uploading file');
-        // }
+        
       });
-    //const file  = fs.readFile;
     
-    //uploadFile(file);
-     
-    // if (!estudioFile) {
-    //   return res.status(400).send('No file uploaded.');
-    // }
-  
-    // // Generate a unique file path (e.g., using a UUID)
-    // const filePath = estudioFile.originalname;
     
-    //const estudios = upload.single('estudioFile');
-    //const { data, error } = await supabase
-    //.storage
-    //.from('estudios_bucket')
-    //.upload('60fa9175a0672.jpeg', estudios, {
-       // cacheControl: '3600',
-       // upsert: false
-   // })
-    
-    // try {
-    //   const { data, error } = await supabase
-    //     .storage
-    //     .from('estudios_bucket')
-    //     .upload(filePath, estudioFile.buffer, {
-    //       cacheControl: '3600',
-    //       upsert: false,
-    //       contentType: estudioFile.mimetype
-    //     });
-  
-    //   if (error) {
-    //     console.error('Error uploading file:', error.message);
-    //     return res.status(500).send('Error uploading file.');
-    //   }
-  
-    //   res.status(200).send(`File uploaded successfully: ${data.path}`);
-    // } catch (error) {
-    //   console.error('Unexpected error:', error);
-    //   res.status(500).send('Unexpected error occurred.');
-    // }
 
 
 app.listen(3000,() => {

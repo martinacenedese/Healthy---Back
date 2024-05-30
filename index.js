@@ -14,6 +14,12 @@ app.use(cors());
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
+async function insertToSupabase(table, file, tipo, diagnostico, fecha, quienSubio){
+//TERMINAR FUNCION
+    const { data, error } = await supabase.storage
+            .from(table)
+            .upload(file)
+}
 async function uploadFileToSupabase(bucketName, fileBuffer, fileName, contentType) {
     try {
         console.log("antes upload");

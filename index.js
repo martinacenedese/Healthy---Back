@@ -11,7 +11,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const app = express();
 app.use(express.json());
 app.use(cors({
-    origin: 'josephfiter.online',
+    origin: 'https://josephfiter.online',
 }));
 const storage = multer.memoryStorage();
 const upload = multer({ storage });

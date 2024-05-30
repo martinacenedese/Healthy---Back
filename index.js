@@ -14,6 +14,12 @@ const upload = multer({ storage });
 
 async function uploadFileToSupabase(bucketName, fileBuffer, fileName, contentType) {
     try {
+        console.log("antes upload");
+        console.log(fileName, fileBuffer, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: contentType,
+        });
         const { data, error } = await supabase.storage
             .from(bucketName)
             .upload(fileName, fileBuffer, {
@@ -21,14 +27,15 @@ async function uploadFileToSupabase(bucketName, fileBuffer, fileName, contentTyp
                 upsert: false,
                 contentType: contentType,
             });
-
+            console.log("desoyes upload");
         if (error) {
-            console.error('Error uploading file:', error.message);
-            return null;
+            console.error('Error uploading file:', error);
         }
 
         // Return the public URL of the uploaded file
+        console.log("antes url");
         const publicURL = await supabase.storage.from(bucketName).createSignedUrl(fileName, 31536000000);
+        console.log("despies url");
         return publicURL.data.signedUrl;
     } catch (error) {
         console.error('Error uploading file to Supabase:', error);
@@ -58,7 +65,7 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
 
     const bucketName = 'estudios_bucket';
     const uniqueFileName = `${uuidv4()}-${file.originalname}`; // Generate a unique file name
-
+    console.log("antes public url");
     const publicURL = await uploadFileToSupabase(bucketName, file.buffer, uniqueFileName, file.mimetype);
 
     if (!publicURL) {

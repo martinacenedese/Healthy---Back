@@ -47,7 +47,7 @@ app.get('/estudios', async (req, res) => {
     const { data, error } = await supabase
         .from('Estudios')
         .select('*');
-
+    
     if (error) {
         console.error('Error fetching data:', error.message);
         return res.status(500).send('Error fetching data');

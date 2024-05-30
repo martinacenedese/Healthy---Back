@@ -2,6 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import { createClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
+import cors from "cors";
 
 const supabaseUrl = 'https://rjujpbbzlfzfemavnumo.supabase.co';
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqdWpwYmJ6bGZ6ZmVtYXZudW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxNTg2MzE5OCwiZXhwIjoyMDMxNDM5MTk4fQ.9GoC2ZHaoV5gjq_Y0H84FQ_cbhhkRzFSiIWmTeQG-RU";
@@ -9,6 +10,9 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 const app = express();
 app.use(express.json());
+app.use(cors({
+    origin: 'josephfiter.online',
+}));
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
@@ -27,7 +31,7 @@ async function uploadFileToSupabase(bucketName, fileBuffer, fileName, contentTyp
                 upsert: false,
                 contentType: contentType,
             });
-            console.log("desoyes upload");
+        console.log("desoyes upload");
         if (error) {
             console.error('Error uploading file:', error);
         }
@@ -47,7 +51,7 @@ app.get('/estudios', async (req, res) => {
     const { data, error } = await supabase
         .from('Estudios')
         .select('*');
-    
+
     if (error) {
         console.error('Error fetching data:', error.message);
         return res.status(500).send('Error fetching data');
@@ -74,30 +78,6 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
 
     res.send(`File uploaded successfully. URL: ${publicURL}`);
 });
-const allowCors = fn => async (req, res) => {
-    res.setHeader('Access-Control-Allow-Credentials', true)
-    res.setHeader('Access-Control-Allow-Origin', '*')
-    // another common pattern
-    // res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
-    res.setHeader(
-      'Access-Control-Allow-Headers',
-      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    )
-    if (req.method === 'OPTIONS') {
-      res.status(200).end()
-      return
-    }
-    return await fn(req, res)
-  }
-  
-  const handler = (req, res) => {
-    const d = new Date()
-    res.end(d.toString())
-  }
-  
-export default allowCors(handler);
-  
 
 app.listen(3000, () => {
     console.log("Server running on port 3000");

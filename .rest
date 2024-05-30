@@ -7,13 +7,23 @@ Content-Type: application/json
     "ok":"fs"
 }       
 
-### 
+###              
 POST http://healthy-back.vercel.app/estudio
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="descarga(4).jpeg"
+Content-Type: image/jpeg
+
+< ./descarga(4).jpeg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+###              
+POST http://localhost:3000/estudio 
 Content-Type: multipart/form-data; boundary=boundary
 
 --boundary
 Content-Disposition: form-data; name="file"; filename="descarga(4).jpg"
 Content-Type: image/jpeg
 
-< ./descarga (4).jpg
+./descarga(4).jpeg
 --boundary--

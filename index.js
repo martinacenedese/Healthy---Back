@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { text } from 'express';
 import multer from 'multer';
 import { createClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
@@ -14,11 +14,11 @@ app.use(cors());
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-async function insertToSupabase(table, file, tipo, diagnostico, fecha, quienSubio){
-//TERMINAR FUNCION
-    const { data, error } = await supabase.storage
+async function insertToSupabase(table, values){
+    const { error } = await supabase
             .from(table)
-            .upload(file)
+            .insert(values);
+    return error;
 }
 async function uploadFileToSupabase(bucketName, fileBuffer, fileName, contentType) {
     try {
@@ -28,6 +28,7 @@ async function uploadFileToSupabase(bucketName, fileBuffer, fileName, contentTyp
             upsert: false,
             contentType: contentType,
         });
+        // Upload file
         const { data, error } = await supabase.storage
             .from(bucketName)
             .upload(fileName, fileBuffer, {
@@ -66,6 +67,7 @@ app.get('/estudios', async (req, res) => {
 
 app.post('/estudio', upload.single('file'), async (req, res) => {
     const file = req.file;
+    const body = req.body;
     console.log(file);
     if (!file) {
         return res.status(400).send('No file uploaded.');
@@ -74,12 +76,14 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
     const bucketName = 'estudios_bucket';
     const uniqueFileName = `${uuidv4()}-${file.originalname}`; // Generate a unique file name
     console.log("antes public url");
+    // The function returns the publicURL with that params.
     const publicURL = await uploadFileToSupabase(bucketName, file.buffer, uniqueFileName, file.mimetype);
-
+    
     if (!publicURL) {
         return res.status(500).send('Error uploading file to Supabase.');
     }
-
+    const error_insert = insertToSupabase("Estudios", {archivo_estudios: publicURL, tipo_estudio: body.tipo, fecha_estudio: body.date, quien_subio_estudios: body.quien_subio, id_usuario: body.usuario}); 
+    
     res.send(`File uploaded successfully. URL: ${publicURL}`);
 });
 

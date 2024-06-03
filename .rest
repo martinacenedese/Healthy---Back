@@ -8,7 +8,7 @@ Content-Type: application/json
 }       
 
 ###               
-POST http://healthy-back.vercel.app/
+POST http://healthy-back.vercel.app/estudio
 Content-Type: multipart/form-data; boundary=boundary
 
 --boundary

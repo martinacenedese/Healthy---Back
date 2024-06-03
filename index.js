@@ -68,7 +68,7 @@ app.get('/estudios', async (req, res) => {
 app.post('/estudio', upload.single('file'), async (req, res) => {
     const file = req.file;
     const body = req.body;
-    console.log(file);
+    res.send(req.body, req.file);
     if (!file) {
         return res.status(400).send('No file uploaded.');
     }
@@ -82,9 +82,14 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
     if (!publicURL) {
         return res.status(500).send('Error uploading file to Supabase.');
     }
-    const error_insert = insertToSupabase("Estudios", {archivo_estudios: publicURL, tipo_estudio: body.tipo, fecha_estudio: body.date, quien_subio_estudios: body.quien_subio, id_usuario: body.usuario}); 
+    const error_insert = insertToSupabase("Estudios", {
+        archivo_estudios: publicURL, 
+        tipo_estudio: body.tipo,
+        fecha_estudio: body.date,
+        quien_subio_estudios: body.quien_subio,
+        id_usuario: body.usuario}); 
     
-    res.send(`File uploaded successfully. URL: ${publicURL}`);
+    // res.send(`File uploaded successfully. URL: ${publicURL}`);
 });
 
 app.listen(3000, () => {

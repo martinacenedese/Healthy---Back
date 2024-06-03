@@ -68,7 +68,8 @@ app.get('/estudios', async (req, res) => {
 app.post('/estudio', upload.single('file'), async (req, res) => {
     const file = req.file;
     const body = req.body;
-    res.send(req.body, req.file);
+    console.log("Post");
+    res.send(req.body);
     if (!file) {
         return res.status(400).send('No file uploaded.');
     }

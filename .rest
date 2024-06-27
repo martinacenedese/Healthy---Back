@@ -31,13 +31,26 @@ Content-Type: image/jpeg
 GET http://healthy-back.vercel.app/estudios
 
 ###
+POST http://healthy-back.vercel.app/historial
+Content-Type: application/json
+
+{
+    "punto": "punto de prueba",
+    "date": "12/12/22",
+    "who": "jorge",
+    "user": "1",
+    "estudios": "35"
+}
+
+###
+###
 POST http://localhost:3000/historial
 Content-Type: application/json
 
 {
-    "punto_historialmedico": "punto de prueba",
-    "fecha_historialmedico": "22/22/22",
-    "quien_subio_historialmedico": "jorge",
-    "id_usuarios": "marti",
-    "id_estudios": "1"
+    "punto": "punto de prueba",
+    "date": "22/22/22",
+    "who": "jorge",
+    "user": "marti",
+    "estudios": "1"
 }

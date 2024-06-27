@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from 'uuid';
 import cors from "cors";
 import dotenv from 'dotenv'
 dotenv.config();
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const supabaseUrl = 'https://rjujpbbzlfzfemavnumo.supabase.co';
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqdWpwYmJ6bGZ6ZmVtYXZudW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxNTg2MzE5OCwiZXhwIjoyMDMxNDM5MTk4fQ.9GoC2ZHaoV5gjq_Y0H84FQ_cbhhkRzFSiIWmTeQG-RU";
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -24,12 +23,6 @@ async function insertToSupabase(table, values){
 }
 async function uploadFileToSupabase(bucketName, fileBuffer, fileName, contentType) {
     try {
-        console.log("antes upload");
-        console.log(fileName, fileBuffer, {
-            cacheControl: '3600',
-            upsert: false,
-            contentType: contentType,
-        });
         // Upload file
         const { data, error } = await supabase.storage
             .from(bucketName)
@@ -38,15 +31,12 @@ async function uploadFileToSupabase(bucketName, fileBuffer, fileName, contentTyp
                 upsert: false,
                 contentType: contentType,
             });
-        console.log("desoyes upload");
         if (error) {
             console.error('Error uploading file:', error);
         }
 
         // Return the public URL of the uploaded file
-        console.log("antes url");
         const publicURL = await supabase.storage.from(bucketName).createSignedUrl(fileName, 31536000000);
-        console.log("despies url");
         return publicURL.data.signedUrl;
     } catch (error) {
         console.error('Error uploading file to Supabase:', error);
@@ -70,12 +60,6 @@ app.get('/estudios', async (req, res) => {
 app.post('/estudio', upload.single('file'), async (req, res) => {
     const file = req.file;
     const body = req.body;
-    console.log(body, file, {
-        archivo_estudios: "publicURL", 
-        tipo_estudios: body.tipo,
-        fecha_estudios: body.date,
-        quien_subio_estudios: body.quien_subio,
-        id_usuarios: body.usuario});
     if (!file) {
         return res.status(400).send('No file uploaded.');
     }
@@ -102,7 +86,7 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
         return res.status(500).send('Error inserting data');
 
     }
-    // res.send(`File uploaded successfully. URL: ${publicURL}`);
+    res.send(`File uploaded successfully. URL: ${publicURL}`);
 });
 
 app.listen(3000, () => {

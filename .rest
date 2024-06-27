@@ -15,8 +15,7 @@ Content-Type: multipart/form-data; boundary=boundary
 Content-Disposition: form-data; name="file"; filename="descarga(4).jpg"
 Content-Type: image/jpeg
 
-< C:\Users\Lucas Behrend\Desktop\Healthy---Back\descarga(4).jpg
---boundary--
+
 ###                       
 POST http://localhost:3000/estudio
 Content-Type: multipart/form-data; boundary=boundary

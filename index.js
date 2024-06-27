@@ -93,15 +93,15 @@ app.post('/historial', async (req, res) => {
     const body = req.body;
 
     const error_insert = await insertToSupabase ("Historial Medico", {
-    punto_historialmedico: body.punto,
-    fecha_historialmedico: body.date,
-    quien_subio_historialmedico: body.who,
-    id_usuarios: body.user,
-    id_estudios: body.estudios});
+        punto_historialmedico: body.punto,
+        fecha_historialmedico: body.date,
+        quien_subio_historialmedico: body.who,
+        id_usuario: body.user,
+        id_estudios: body.estudios});
 
     if(error_insert){
         console.log("Error insertando punto del historial medico:", error_insert);
-        res.status(500).send('Error inserting data');
+        return res.status(500).send('Error inserting data');
     }
     res.send(`Medical historia inserted successfully.`);
 });

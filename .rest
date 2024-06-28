@@ -8,15 +8,14 @@ Content-Type: application/json
 }       
 
 ###               
-POST http://healthy-back.vercel.app/
+POST http://healthy-back.vercel.app/estudio
 Content-Type: multipart/form-data; boundary=boundary
 
 --boundary
 Content-Disposition: form-data; name="file"; filename="descarga(4).jpg"
 Content-Type: image/jpeg
 
-< C:\Users\Lucas Behrend\Desktop\Healthy---Back\descarga(4).jpg
---boundary--
+
 ###                       
 POST http://localhost:3000/estudio
 Content-Type: multipart/form-data; boundary=boundary
@@ -30,3 +29,31 @@ Content-Type: image/jpeg
 
 ###
 GET http://healthy-back.vercel.app/estudios
+
+###
+POST http://healthy-back.vercel.app/historial
+Content-Type: application/json
+
+{
+    "punto": "punto de prueba",
+    "date": "12/12/22",
+    "who": "jorge",
+    "user": "1",
+    "estudios": "35"
+}
+
+###
+###
+POST http://localhost:3000/historial
+Content-Type: application/json
+
+{
+    "punto": "punto de prueba",
+    "date": "22/22/22",
+    "who": "jorge",
+    "user": "marti",
+    "estudios": "1"
+}
+
+###
+GET http://healthy-back.vercel.app/historial/1

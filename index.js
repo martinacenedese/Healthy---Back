@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
 import cors from "cors";
 import dotenv from 'dotenv'
+import axios from "axios";
 dotenv.config();
 const supabaseUrl = 'https://rjujpbbzlfzfemavnumo.supabase.co';
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqdWpwYmJ6bGZ6ZmVtYXZudW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxNTg2MzE5OCwiZXhwIjoyMDMxNDM5MTk4fQ.9GoC2ZHaoV5gjq_Y0H84FQ_cbhhkRzFSiIWmTeQG-RU";
@@ -43,6 +44,8 @@ async function uploadFileToSupabase(bucketName, fileBuffer, fileName, contentTyp
         return null;
     }
 }
+
+async function post_req ()
 
 app.get('/estudios', async (req, res) => {
     const { data, error } = await supabase

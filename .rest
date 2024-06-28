@@ -54,3 +54,6 @@ Content-Type: application/json
     "user": "marti",
     "estudios": "1"
 }
+
+###
+GET http://healthy-back.vercel.app/historial/1

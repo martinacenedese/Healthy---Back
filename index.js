@@ -107,6 +107,19 @@ app.post('/historial', async (req, res) => {
     res.send(`Medical historia inserted successfully.`);
 });
 
+app.get('/historial/:user', async (req,res) => {
+    const user = req.params.user;
+    const { data, error } = await supabase
+        .from('Historial Medico')
+        .select()
+        .eq('id_usuario', user);
+    
+    if (error){
+        res.status(500).send('Error inserting data');
+    }
+    res.send(data);
+
+})
 app.listen(3000, () => {
     console.log("Server running on port 3000");
 });

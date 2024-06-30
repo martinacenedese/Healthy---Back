@@ -45,7 +45,7 @@ async function uploadFileToSupabase(bucketName, fileBuffer, fileName, contentTyp
     }
 }
 
-async function post_req ()
+// async function post_req ()
 
 app.get('/estudios', async (req, res) => {
     const { data, error } = await supabase

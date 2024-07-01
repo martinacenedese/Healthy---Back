@@ -12,7 +12,11 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
@@ -111,13 +115,6 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
 
 app.post('/historial', async (req, res) => {
     const body = req.body;
-    const x = {
-        punto_historialmedico: body.punto,
-        fecha_historialmedico: body.date,
-        quien_subio_historialmedico: body.who,
-        id_usuario: body.user,
-        id_estudios: body.estudios}
-    res.send("Post historial: ${x}" );
     try{
         const error_insert = await insertToSupabase ("Historial Medico", {
             punto_historialmedico: body.punto,

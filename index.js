@@ -11,7 +11,6 @@ const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const app = express();
-app.use(express.json());
 // Cuales URL estan permitidas hacer req.
 const allowedOrigins = ['http://localhost:5173', 'https://josephfiter.online', "http://localhost:3000"];
 const corsOptions = {
@@ -28,10 +27,11 @@ const corsOptions = {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
     allowedHeaders: ['Content-Type', 'Authorization'] 
 }; 
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
 
 app.use(cors());
 app.options('*', cors());
+app.use(express.json());
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 

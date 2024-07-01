@@ -18,9 +18,9 @@ const app = express();
 // app.use(cors(corsOptions));
 
 app.use(cors({
-    origin: [`http://localhost:3000`,"https://josephfiter.online", "http://localhost:5173"],
+    origin: '*',
     methods: ['POST', 'PUT', 'GET', 'DELETE', 'OPTIONS', 'HEAD'],
-    credentials: true,
+    credentials: false,
     allowedHeaders: '*'
 
 })

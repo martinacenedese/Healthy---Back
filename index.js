@@ -45,7 +45,24 @@ async function uploadFileToSupabase(bucketName, fileBuffer, fileName, contentTyp
     }
 }
 
-// async function post_req ()
+// funcion para poder mandar req. tipo post.
+async function postReq (body, url){
+    try{
+        const response = await axios.post(url,body);
+        return response.data;
+    } catch(error){
+        return { error: 'Error posting data, details: ' + error.message };        
+    }
+}
+
+async function getReq (url){
+    try{
+        const data = await axios.get(url);
+        return data;
+    } catch (error){
+        return {error: 'Error getting data, details: ' + error.message};
+    }
+}
 
 app.get('/estudios', async (req, res) => {
     const { data, error } = await supabase
@@ -121,8 +138,24 @@ app.get('/historial/:user', async (req,res) => {
         res.status(500).send('Error inserting data');
     }
     res.send(data);
+});
 
-})
+app.post('/turnos', async (req,res) => {
+    const urlBehrend = "https://main-lahv.onrender.com/turnos";
+    const body = req.body;
+    try{
+        const response = await postReq(body, urlBehrend);
+        res.send(response);
+    } catch (error) {
+        res.status(500).send('Error posting data: ', error.message);
+    }
+}); 
+
+// app.get('/turnos:user', async (req,res) => {
+//     const user = req.params.user;
+//     const data = 
+// });
+
 app.listen(3000, () => {
     console.log("Server running on port 3000");
 });

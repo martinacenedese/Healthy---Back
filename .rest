@@ -7,26 +7,6 @@ Content-Type: application/json
     "ok":"fs"
 }       
 
-###               
-POST http://healthy-back.vercel.app/estudio
-Content-Type: multipart/form-data; boundary=boundary
-
---boundary
-Content-Disposition: form-data; name="file"; filename="descarga(4).jpg"
-Content-Type: image/jpeg
-
-
-###                       
-POST http://localhost:3000/estudio
-Content-Type: multipart/form-data; boundary=boundary
-
---boundary
-Content-Disposition: form-data; name="file"; filename="descarga(4).jpg"
-Content-Type: image/jpeg
-
-<descarga(4).jpg>
---boundary--
-
 ###
 GET http://healthy-back.vercel.app/estudios
 
@@ -57,3 +37,14 @@ Content-Type: application/json
 
 ###
 GET http://healthy-back.vercel.app/historial/1
+### 
+POST http://localhost:3000/turnos
+Content-Type: application/json
+
+{
+
+"turnos":[
+{ "paciente": "Marti", "medico": "jose", "fecha": "24-01-2023", "hora": "16:00" }, { "paciente": "Marti", "medico": "pedro", "fecha": "25-01-2024", "hora": "15:00" }
+]
+
+}

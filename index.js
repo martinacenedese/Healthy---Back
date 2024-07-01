@@ -13,7 +13,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const app = express();
 app.use(express.json());
 // Cuales URL estan permitidas hacer req.
-const allowedOrigins = ['http://localhost:5173', 'https://josephfiter', "http://localhost:3000"];
+const allowedOrigins = ['http://localhost:5173', 'https://josephfiter.online', "http://localhost:3000"];
 const corsOptions = {
     origin: function (origin, callback) {
     // Permitir solicitudes sin origen (como las de Postman)
@@ -28,7 +28,7 @@ const corsOptions = {
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
     allowedHeaders: ['Content-Type', 'Authorization'] 
 }; 
-app.use(cors());
+app.use(cors(corsOptions));
 
 app.use(cors());
 app.options('*', cors());

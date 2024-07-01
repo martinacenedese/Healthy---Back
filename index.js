@@ -21,6 +21,8 @@ app.use(cors({
     origin: [`http://localhost:3000`,"https://josephfiter.online", "http://localhost:5173"],
     methods: ['POST', 'PUT', 'GET', 'DELETE', 'OPTIONS', 'HEAD'],
     credentials: true,
+    allowedHeaders: '*'
+
 })
 );
 app.set("trust proxy", 1);

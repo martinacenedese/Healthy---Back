@@ -18,7 +18,7 @@ const app = express();
 // app.use(cors(corsOptions));
 
 app.use(cors({
-    origin: [`http://localhost:3000`,"https://groupit.vercel.app"],
+    origin: [`http://localhost:3000`,"https://josephfiter.online", "http://localhost:5173"],
     methods: ['POST', 'PUT', 'GET', 'DELETE', 'OPTIONS', 'HEAD'],
     credentials: true,
 })

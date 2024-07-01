@@ -74,6 +74,7 @@ async function postReq (body, url){
     }
 }
 
+// funcion para poder mandar un req. tipo get.
 async function getReq (url){
     try{
         const data = await axios.get(url);
@@ -82,6 +83,9 @@ async function getReq (url){
         return {error: 'Error getting data, details: ' + error.message};
     }
 }
+
+//funcion para generar link al medico.
+//function userURL ()
 
 app.get('/estudios', async (req, res) => {
     const { data, error } = await supabase

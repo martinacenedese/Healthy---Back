@@ -112,16 +112,15 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
 
 app.post('/historial', async (req, res) => {
     const body = req.body;
-    try{
-        const error_insert = await insertToSupabase ("Historial Medico", {
-            punto_historialmedico: body.punto,
-            fecha_historialmedico: body.date,
-            quien_subio_historialmedico: body.who,
-            id_usuario: body.user,
-            id_estudios: body.estudios});
-    }
-    catch (error){
-        res.send(`Medical historia inserted successfully.`);
+    const error_insert = await insertToSupabase ("Historial Medico", {
+        punto_historialmedico: body.punto,
+        fecha_historialmedico: body.date,
+        quien_subio_historialmedico: body.who,
+        id_usuario: body.user,
+        id_estudios: body.estudios});
+    
+    if (error_insert){
+        res.status(500).send('Error posting data: ', error.message);
     }
 
     

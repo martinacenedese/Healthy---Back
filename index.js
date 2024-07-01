@@ -151,10 +151,17 @@ app.post('/turnos', async (req,res) => {
     }
 }); 
 
-// app.get('/turnos:user', async (req,res) => {
-//     const user = req.params.user;
-//     const data = 
-// });
+app.get('/turnos:user', async (req,res) => {
+    try{
+        const urlBehrend = "https://main-lahv.onrender.com/turnos/${user}";
+        const user = req.params.user;
+        res.send(data);
+        const data = await getReq(urlBehrend);
+    }catch(error){
+    
+
+    }
+});
 
 app.listen(3000, () => {
     console.log("Server running on port 3000");

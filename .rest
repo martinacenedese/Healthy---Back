@@ -38,7 +38,7 @@ Content-Type: application/json
 ###
 GET http://healthy-back.vercel.app/historial/1
 ### 
-POST http://localhost:3000/turnos
+POST http://healthy-back.vercel.app/turnos
 Content-Type: application/json
 
 {

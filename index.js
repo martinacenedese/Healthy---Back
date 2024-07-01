@@ -12,6 +12,24 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 const app = express();
 app.use(express.json());
+// Cuales URL estan permitidas hacer req.
+const allowedOrigins = ['http://localhost:5173', 'https://josephfiter', "http://localhost:3000"];
+const corsOptions = {
+    origin: function (origin, callback) {
+    // Permitir solicitudes sin origen (como las de Postman)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) !== -1) { 
+            callback(null, true); 
+        }
+        else { 
+            callback(new Error('Not allowed by CORS'));
+        } 
+    }, 
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
+    allowedHeaders: ['Content-Type', 'Authorization'] 
+}; 
+app.use(cors(corsOptions));
+
 app.use(cors());
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -106,6 +124,14 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
         res.status(500).send('Error inserting data');
 
     }
+    try {
+        const urlSuch = 'https://hjuyhjiuhjdsadasda-healthy.hf.space/upload-image';
+        const data = await postReq(file, urlSuch);
+        res.send(data);
+    } catch (error) {
+        res.status(500).send('Error posting data to AI');
+    }
+
     res.send(`File uploaded successfully. URL: ${publicURL}`);
 });
 
@@ -141,9 +167,9 @@ app.get('/historial/:user', async (req,res) => {
 });
 
 app.post('/turnos', async (req,res) => {
-    const urlBehrend = "https://main-lahv.onrender.com/turnos";
-    const body = req.body;
     try{
+        const body = req.body;
+        const urlBehrend = "https://main-lahv.onrender.com/turnos";
         const response = await postReq(body, urlBehrend);
         res.send(response);
     } catch (error) {
@@ -152,14 +178,13 @@ app.post('/turnos', async (req,res) => {
 }); 
 
 app.get('/turnos:user', async (req,res) => {
-    try{
-        const urlBehrend = "https://main-lahv.onrender.com/turnos/${user}";
+    try {
         const user = req.params.user;
-        res.send(data);
+        const urlBehrend = "https://main-lahv.onrender.com/turnos/${user}";
         const data = await getReq(urlBehrend);
-    }catch(error){
-    
-
+        res.send(data);
+    } catch(error){
+        res.status(500).send('Error getting data'); 
     }
 });
 

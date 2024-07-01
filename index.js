@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import cors from "cors";
 import dotenv from 'dotenv'
 import axios from "axios";
+import bcrypt from 'bcrypt';
 dotenv.config();
 const supabaseUrl = 'https://rjujpbbzlfzfemavnumo.supabase.co';
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqdWpwYmJ6bGZ6ZmVtYXZudW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxNTg2MzE5OCwiZXhwIjoyMDMxNDM5MTk4fQ.9GoC2ZHaoV5gjq_Y0H84FQ_cbhhkRzFSiIWmTeQG-RU";
@@ -31,30 +32,29 @@ const corsOptions = {
 
 app.use(cors());
 app.options('*', cors());
-app.use(express.json());
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 async function insertToSupabase(table, values){
     const error = await supabase
-            .from(table)
-            .insert(values);
+    .from(table)
+    .insert(values);
     return error;
 }
 async function uploadFileToSupabase(bucketName, fileBuffer, fileName, contentType) {
     try {
         // Upload file
         const { data, error } = await supabase.storage
-            .from(bucketName)
-            .upload(fileName, fileBuffer, {
-                cacheControl: '3600',
-                upsert: false,
-                contentType: contentType,
-            });
+        .from(bucketName)
+        .upload(fileName, fileBuffer, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: contentType,
+        });
         if (error) {
             console.error('Error uploading file:', error);
         }
-
+        
         // Return the public URL of the uploaded file
         const publicURL = await supabase.storage.from(bucketName).createSignedUrl(fileName, 31536000000);
         return publicURL.data.signedUrl;
@@ -85,11 +85,14 @@ async function getReq (url){
 }
 
 //funcion para generar link al medico.
-//function userURL ()
+function userURL (id, url){
 
+}
+
+app.use(express.json());
 app.get('/estudios', async (req, res) => {
     const { data, error } = await supabase
-        .from('Estudios')
+    .from('Estudios')
         .select('*');
 
     if (error) {

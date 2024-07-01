@@ -13,25 +13,18 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 const app = express();
 // Cuales URL estan permitidas hacer req.
-const allowedOrigins = ['http://localhost:5173', 'https://josephfiter.online', "http://localhost:3000"];
-const corsOptions = {
-    origin: function (origin, callback) {
-    // Permitir solicitudes sin origen (como las de Postman)
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1) { 
-            callback(null, true); 
-        }
-        else { 
-            callback(new Error('Not allowed by CORS'));
-        } 
-    }, 
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
-    allowedHeaders: ['Content-Type', 'Authorization'] 
-}; 
+//const allowedOrigins = ['http://localhost:5173', 'https://josephfiter.online', "http://localhost:3000"];
+
 // app.use(cors(corsOptions));
 
-app.use(cors());
-app.options('*', cors());
+app.use(cors({
+    origin: [`http://localhost:3000`,"https://groupit.vercel.app"],
+    methods: ['POST', 'PUT', 'GET', 'DELETE', 'OPTIONS', 'HEAD'],
+    credentials: true,
+})
+);
+app.set("trust proxy", 1);
+//pp.options('*', cors());
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 

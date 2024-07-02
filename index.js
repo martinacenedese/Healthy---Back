@@ -1,6 +1,6 @@
 import express, { text } from 'express';
 import multer from 'multer';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, lockInternals } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
 import cors from "cors";
 import dotenv from 'dotenv'
@@ -74,17 +74,24 @@ async function getReq (url){
     try{
         const data = await axios.get(url);
         return data;
-    } catch (error){
-        return {error: 'Error getting data, details: ' + error.message};
+    } catch (err){
+        return {error: 'Error getting data, details: ' + err.message};
     }
 }
 
 //funcion para generar link al medico.
-function userURL (id, url){
-
+async function userURL (id, url){
+    try {
+        const hash = await bcrypt.hash(id, 10);
+        return url + '/' + hash;
+    } catch (error) {
+        console.log('Error userURL, details: ' + error.message);
+        throw error;
+    }
 }
 
 app.use(express.json());
+
 app.get('/estudios', async (req, res) => {
     const { data, error } = await supabase
     .from('Estudios')
@@ -188,7 +195,7 @@ app.post('/turnos', async (req,res) => {
     }
 }); 
 
-app.get('/turnos:user', async (req,res) => {
+app.get('/turnos/:user', async (req,res) => {
     try {
         const user = req.params.user;
         const urlBehrend = "https://main-lahv.onrender.com/turnos/${user}";
@@ -198,6 +205,17 @@ app.get('/turnos:user', async (req,res) => {
         res.status(500).send('Error getting data'); 
     }
 });
+
+app.get('/userURL/:user', async (req,res) => {
+    try{
+        const user = req.params.user;
+        const url = await userURL (user,'https://josephfiter.online');
+        console.log(url);
+        res.send(url);
+    } catch (error) {
+        console.log(error);
+    }
+})
 
 app.listen(3000, () => {
     console.log("Server running on port 3000");

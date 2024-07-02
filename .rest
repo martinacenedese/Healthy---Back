@@ -15,11 +15,11 @@ POST http://healthy-back.vercel.app/historial
 Content-Type: application/json
 
 {
-    "punto": "punto de prueba",
+    "punto": "caca",
     "date": "12/12/22",
     "who": "jorge",
-    "user": "1",
-    "estudios": "35"
+    "user": 1,
+    "estudios": 35
 }
 
 ###
@@ -28,11 +28,11 @@ POST http://localhost:3000/historial
 Content-Type: application/json
 
 {
-    "punto": "punto de prueba",
-    "date": "22/22/22",
+    "punto": "dhjsd",
+    "date": "12/12/2022",
     "who": "jorge",
-    "user": "marti",
-    "estudios": "1"
+    "user": 1,
+    "estudios": 46
 }
 
 ###

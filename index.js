@@ -13,12 +13,12 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 const app = express();
 // Cuales URL estan permitidas hacer req.
-//const allowedOrigins = ['http://localhost:5173', 'https://josephfiter.online', "http://localhost:3000"];
+const allowedOrigins = ['http://localhost:5173', 'https://josephfiter.online', "http://localhost:3000"];
 
 // app.use(cors(corsOptions));
 
 app.use(cors({
-    origin: '*',
+    origin: allowedOrigins,
     methods: ['POST', 'PUT', 'GET', 'DELETE', 'OPTIONS', 'HEAD'],
     credentials: true,
     allowedHeaders: '*'
@@ -124,7 +124,7 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     //Cambiar por seguridad
     const error_insert = await insertToSupabase("Estudios", {
-        archivo_estudios: publicURL, 
+        archivo_estudios: publicURL,
         tipo_estudios: body.tipo,
         fecha_estudios: body.date,
         quien_subio_estudios: body.quien_subio,

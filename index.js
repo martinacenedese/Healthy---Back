@@ -18,7 +18,7 @@ const allowedOrigins = ['http://localhost:5173', 'https://josephfiter.online', "
 // app.use(cors(corsOptions));
 
 app.use(cors({
-    origin: allowedOrigins,
+    origin: "*",
     methods: ['POST', 'PUT', 'GET', 'DELETE', 'OPTIONS', 'HEAD'],
     credentials: true,
     allowedHeaders: '*'
@@ -137,6 +137,7 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
     try {
         const urlSuch = 'https://hjuyhjiuhjdsadasda-healthy.hf.space/upload-image';
         const data = await postReq(file, urlSuch);
+        console.log("req ia: ", data);
         res.send(data);
     } catch (error) {
         res.status(500).send('Error posting data to AI');

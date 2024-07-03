@@ -140,7 +140,11 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
         let formData = new FormData();
         formData.append('file', file);
         const urlSuch = 'https://hjuyhjiuhjdsadasda-healthy.hf.space/upload-image/';
-        const data = await postReq(formData, urlSuch);
+        const data = await fetch(urlSuch, {
+            method: 'POST',
+            body: formData
+        });
+
         console.log("req ia: ", data);
         return res.send(data);
     } catch (error) {

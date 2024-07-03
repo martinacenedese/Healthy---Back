@@ -138,7 +138,7 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
         let formData = new FormData();
         formData.append('file', file);
         const urlSuch = 'https://hjuyhjiuhjdsadasda-healthy.hf.space/upload-image/';
-        const data = await postReq(formData, urlSuch, {headers: "multipart/form-data"});
+        const data = await postReq(formData, urlSuch, {headers: {"Content-Type":"multipart/form-data"}});
         console.log("req ia: ", data);
         res.send(data);
     } catch (error) {

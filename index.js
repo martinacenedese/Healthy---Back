@@ -128,7 +128,7 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
 
     }
     try {
-        const urlSuch = 'https://hjuyhjiuhjdsadasda-healthy.hf.space/upload-image';
+        const urlSuch = 'https://hjuyhjiuhjdsadasda-healthy.hf.space/upload-image/';
         const data = await postReq(file, urlSuch);
         res.send(data);
     } catch (error) {

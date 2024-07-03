@@ -30,26 +30,26 @@ app.set("trust proxy", 1);
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-async function insertToSupabase(table, values){
+async function insertToSupabase(table, values) {
     const error = await supabase
-    .from(table)
-    .insert(values);
+        .from(table)
+        .insert(values);
     return error;
 }
 async function uploadFileToSupabase(bucketName, fileBuffer, fileName, contentType) {
     try {
         // Upload file
         const { data, error } = await supabase.storage
-        .from(bucketName)
-        .upload(fileName, fileBuffer, {
-            cacheControl: '3600',
-            upsert: false,
-            contentType: contentType,
-        });
+            .from(bucketName)
+            .upload(fileName, fileBuffer, {
+                cacheControl: '3600',
+                upsert: false,
+                contentType: contentType,
+            });
         if (error) {
             console.error('Error uploading file:', error);
         }
-        
+
         // Return the public URL of the uploaded file
         const publicURL = await supabase.storage.from(bucketName).createSignedUrl(fileName, 31536000000);
         return publicURL.data.signedUrl;
@@ -60,27 +60,27 @@ async function uploadFileToSupabase(bucketName, fileBuffer, fileName, contentTyp
 }
 
 // funcion para poder mandar req. tipo post.
-async function postReq (body, url, headers){
-    try{
-        const response = await axios.post(url,body, headers);
+async function postReq(body, url, headers = null) {
+    try {
+        const response = await axios.post(url, body, headers);
         return response.data;
-    } catch(error){
-        return { error: 'Error posting data, details: ' + error.message };        
+    } catch (error) {
+        return { error: 'Error posting data, details: ' + error.message };
     }
 }
 
 // funcion para poder mandar un req. tipo get.
-async function getReq (url){
-    try{
+async function getReq(url) {
+    try {
         const data = await axios.get(url);
         return data;
-    } catch (err){
-        return {error: 'Error getting data, details: ' + err.message};
+    } catch (err) {
+        return { error: 'Error getting data, details: ' + err.message };
     }
 }
 
 //funcion para generar link al medico.
-async function userURL (id, url){
+async function userURL(id, url) {
     try {
         const hash = await bcrypt.hash(id, 10);
         return url + '/' + hash;
@@ -94,7 +94,7 @@ app.use(express.json());
 
 app.get('/estudios', async (req, res) => {
     const { data, error } = await supabase
-    .from('Estudios')
+        .from('Estudios')
         .select('*');
 
     if (error) {
@@ -117,9 +117,10 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
     console.log("antes public url");
     // The function returns the publicURL with that params.
     const publicURL = await uploadFileToSupabase(bucketName, file.buffer, uniqueFileName, file.mimetype);
-    
+
     if (!publicURL) {
-        return res.status(500).send('Error uploading file to Supabase.');
+        //aca hay un problema
+        res.status(500).send('Error uploading file to Supabase.');
     }
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     //Cambiar por seguridad
@@ -128,8 +129,9 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
         tipo_estudios: body.tipo,
         fecha_estudios: body.date,
         quien_subio_estudios: body.quien_subio,
-        id_usuarios: body.usuario}); 
-    if(error_insert){
+        id_usuarios: body.usuario
+    });
+    if (error_insert) {
         console.log("Error insertando el archivo: ", error_insert);
         res.status(500).send('Error inserting data');
 
@@ -138,10 +140,11 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
         let formData = new FormData();
         formData.append('file', file);
         const urlSuch = 'https://hjuyhjiuhjdsadasda-healthy.hf.space/upload-image/';
-        const data = await postReq(formData, urlSuch, {headers: {"content-disposition":"form-data"}});
+        const data = await postReq(formData, urlSuch);
         console.log("req ia: ", data);
-        res.send(data);
+        return res.send(data);
     } catch (error) {
+        console.log(error);
         res.status(500).send('Error posting data to AI');
     }
 
@@ -150,45 +153,47 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
 
 app.post('/historial', async (req, res) => {
     const body = req.body;
-    console.log(typeof(body), {
+    console.log(typeof (body), {
         punto_historialmedico: body.punto,
         fecha_historialmedico: body.date,
         quien_subio_historialmedico: body.who,
         id_usuario: body.user,
-        id_estudios: body.estudios})
+        id_estudios: body.estudios
+    })
     // res.send()
-    const error_insert = await insertToSupabase ("Historial Medico", {
+    const error_insert = await insertToSupabase("Historial Medico", {
         punto_historialmedico: body.punto,
         fecha_historialmedico: body.date,
         quien_subio_historialmedico: body.who,
         id_usuario: body.user,
-        id_estudios: body.estudios});
-        
-    if (error_insert.error){
-        res.status(500).send('Error posting data: ');    
-    }   
-    else{
+        id_estudios: body.estudios
+    });
+
+    if (error_insert.error) {
+        res.status(500).send('Error posting data: ');
+    }
+    else {
         res.send(`Medical historia inserted successfully.`);
     }
 
-    
+
 });
 
-app.get('/historial/:user', async (req,res) => {
+app.get('/historial/:user', async (req, res) => {
     const user = req.params.user;
     const { data, error } = await supabase
         .from('Historial Medico')
         .select()
         .eq('id_usuario', user);
-    
-    if (error){
+
+    if (error) {
         res.status(500).send('Error inserting data');
     }
     res.send(data);
 });
 
-app.post('/turnos', async (req,res) => {
-    try{
+app.post('/turnos', async (req, res) => {
+    try {
         const body = req.body;
         const urlBehrend = "https://main-lahv.onrender.com/turnos";
         const response = await postReq(body, urlBehrend);
@@ -196,23 +201,23 @@ app.post('/turnos', async (req,res) => {
     } catch (error) {
         res.status(500).send('Error posting data: ', error.message);
     }
-}); 
+});
 
-app.get('/turnos/:user', async (req,res) => {
+app.get('/turnos/:user', async (req, res) => {
     try {
         const user = req.params.user;
         const urlBehrend = "https://main-lahv.onrender.com/turnos/${user}";
         const data = await getReq(urlBehrend);
         res.send(data);
-    } catch(error){
-        res.status(500).send('Error getting data'); 
+    } catch (error) {
+        res.status(500).send('Error getting data');
     }
 });
 
-app.get('/userURL/:user', async (req,res) => {
-    try{
+app.get('/userURL/:user', async (req, res) => {
+    try {
         const user = req.params.user;
-        const url = await userURL (user,'https://josephfiter.online');
+        const url = await userURL(user, 'https://josephfiter.online');
         console.log(url);
         res.send(url);
     } catch (error) {

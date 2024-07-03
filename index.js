@@ -60,9 +60,9 @@ async function uploadFileToSupabase(bucketName, fileBuffer, fileName, contentTyp
 }
 
 // funcion para poder mandar req. tipo post.
-async function postReq (body, url){
+async function postReq (body, url, headers){
     try{
-        const response = await axios.post(url,body);
+        const response = await axios.post(url,body, headers);
         return response.data;
     } catch(error){
         return { error: 'Error posting data, details: ' + error.message };        
@@ -135,8 +135,10 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
 
     }
     try {
+        let formData = new FormData();
+        formData.append('file', file);
         const urlSuch = 'https://hjuyhjiuhjdsadasda-healthy.hf.space/upload-image/';
-        const data = await postReq(file, urlSuch);
+        const data = await postReq(formData, urlSuch, {headers: "multipart/form-data"});
         console.log("req ia: ", data);
         res.send(data);
     } catch (error) {

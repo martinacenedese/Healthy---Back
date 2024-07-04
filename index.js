@@ -204,15 +204,14 @@ app.post('/turnos', async (req, res) => {
 });
 
 app.get('/turnos/:user', async (req, res) => {
-    res.send("ok turnos");
-    // try {
-    //     const user = req.params.user;
-    //     const urlBehrend = "https://main-lahv.onrender.com/turnos/${user}";
-    //     const data = await getReq(urlBehrend);
-    //     res.send(data);
-    // } catch (error) {
-    //     // res.status(500).send('Error getting data');
-    // }
+    try {
+        const user = req.params.user;
+        const urlBehrend = "https://main-lahv.onrender.com/turnos/Lucas";
+        const data = await getReq(urlBehrend);
+        res.send(data);
+    } catch (error) {
+        // res.status(500).send('Error getting data');
+    }
 });
 
 app.get('/userURL/:user', async (req, res) => {

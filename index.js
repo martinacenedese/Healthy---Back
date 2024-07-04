@@ -203,10 +203,10 @@ app.post('/turnos', async (req, res) => {
     }
 });
 
-app.get('/turnos/:user', async (req, res) => {
+app.get('/turnos', async (req, res) => {
     try {
         const user = req.params.user;
-        const urlBehrend = "https://main-lahv.onrender.com/turnos/Lucas";
+        const urlBehrend = "https://main-lahv.onrender.com/turnos";
         const data = await getReq(urlBehrend);
         return res.send(data);
     } catch (error) {

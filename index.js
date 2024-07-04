@@ -6,6 +6,8 @@ import cors from "cors";
 import dotenv from 'dotenv'
 import axios from "axios";
 import bcrypt from 'bcrypt';
+import FormData from 'form-data';
+import fs from 'fs';
 dotenv.config();
 const supabaseUrl = 'https://rjujpbbzlfzfemavnumo.supabase.co';
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqdWpwYmJ6bGZ6ZmVtYXZudW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxNTg2MzE5OCwiZXhwIjoyMDMxNDM5MTk4fQ.9GoC2ZHaoV5gjq_Y0H84FQ_cbhhkRzFSiIWmTeQG-RU";
@@ -27,8 +29,9 @@ app.use(cors({
 );
 app.set("trust proxy", 1);
 //pp.options('*', cors());
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+// const storage = multer.memoryStorage();
+// const upload = multer({ storage });
+const upload = multer({ dest: 'uploads/' });
 
 async function insertToSupabase(table, values) {
     const error = await supabase
@@ -60,11 +63,12 @@ async function uploadFileToSupabase(bucketName, fileBuffer, fileName, contentTyp
 }
 
 // funcion para poder mandar req. tipo post.
-async function postReq(body, url, headers = null) {
+async function postReq(body, url, headers) {
     try {
         const response = await axios.post(url, body, headers);
         return response.data;
     } catch (error) {
+        console.error('Error:', error);
         return { error: 'Error posting data, details: ' + error.message };
     }
 }
@@ -108,51 +112,61 @@ app.get('/estudios', async (req, res) => {
 app.post('/estudio', upload.single('file'), async (req, res) => {
     const file = req.file;
     const body = req.body;
+    console.log("body", body);
+    console.log(file.buffer);
     if (!file) {
         return res.status(400).send('No file uploaded.');
     }
-
-    const bucketName = 'estudios_bucket';
-    const uniqueFileName = `${uuidv4()}-${file.originalname}`; // Generate a unique file name
-    console.log("antes public url");
-    // The function returns the publicURL with that params.
-    const publicURL = await uploadFileToSupabase(bucketName, file.buffer, uniqueFileName, file.mimetype);
-
-    if (!publicURL) {
-        //aca hay un problema
-        res.status(500).send('Error uploading file to Supabase.');
-    }
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-    //Cambiar por seguridad
-    const error_insert = await insertToSupabase("Estudios", {
-        archivo_estudios: publicURL,
-        tipo_estudios: body.tipo,
-        fecha_estudios: body.date,
-        quien_subio_estudios: body.quien_subio,
-        id_usuarios: body.usuario
-    });
-    if (error_insert) {
-        console.log("Error insertando el archivo: ", error_insert);
-        res.status(500).send('Error inserting data');
-
-    }
+    
     try {
-        let formData = new FormData();
-        formData.append('file', file);
         const urlSuch = 'https://hjuyhjiuhjdsadasda-healthy.hf.space/upload-image/';
-        const data = await fetch(urlSuch, {
-            method: 'POST',
-            body: formData
+        const formData = new FormData();
+        formData.append('file', fs.createReadStream(req.file.path));
+        console.log(file);
+        console.log(typeof(formData),formData)
+        var data = await postReq(formData, urlSuch, {
+            headers: {
+                ...formData.getHeaders()
+            }
         });
 
         console.log("req ia: ", data);
-        return res.send(data);
+        
     } catch (error) {
         console.log(error);
-        res.status(500).send('Error posting data to AI');
+        return res.status(500).send('Error posting data to AI');
     }
-
-    res.send(`File uploaded successfully. URL: ${publicURL}`);
+    const bucketName = 'estudios_bucket';
+    const uniqueFileName = `${uuidv4()}-${file.originalname}`; // Generate a unique file name
+       // The function returns the publicURL with that params.
+    await fs.readFile(file.path, async (err, data) => {
+        if (err) {
+            console.error('Error reading uploaded file:', err);
+            return res.status(500).send('Error reading uploaded file.');
+        }
+        const publicURL = await uploadFileToSupabase(bucketName, data, uniqueFileName, file.mimetype);
+        
+        if (!publicURL) {
+            //aca hay un problema
+            res.status(500).send('Error uploading file to Supabase.');
+        }
+        process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+        //Cambiar por seguridad
+        const error_insert = await insertToSupabase("Estudios", {
+            archivo_estudios: publicURL,
+            tipo_estudios: body.tipo,
+            fecha_estudios: body.date,
+            quien_subio_estudios: body.quien_subio,
+            id_usuarios: body.usuario
+        });
+        if (error_insert.error) {
+            console.log("Error insertando el archivo: ", error_insert);
+            res.status(500).send('Error inserting data');
+        }
+        res.send(data);
+    });
+    // }
+    fs.unlinkSync(req.file.path);
 });
 
 app.post('/historial', async (req, res) => {
@@ -232,3 +246,4 @@ app.get('/userURL/:user', async (req, res) => {
 app.listen(3000, () => {
     console.log("Server running on port 3000");
 });
+export default app;

@@ -210,7 +210,7 @@ app.get('/turnos/:user', async (req, res) => {
         const data = await getReq(urlBehrend);
         res.send(data);
     } catch (error) {
-        res.status(500).send('Error getting data');
+        // res.status(500).send('Error getting data');
     }
 });
 

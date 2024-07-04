@@ -170,10 +170,10 @@ app.post('/historial', async (req, res) => {
     });
 
     if (error_insert.error) {
-        res.status(500).send('Error posting data: ', error_insert.error);
+        return res.status(500).send('Error posting data: '+ error_insert.error);
     }
     else {
-        res.send(`Medical historia inserted successfully.`);
+        return res.send(`Medical historia inserted successfully.`);
     }
 
 

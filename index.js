@@ -208,9 +208,10 @@ app.get('/turnos', async (req, res) => {
         const user = req.params.user;
         const urlBehrend = "https://main-lahv.onrender.com/turnos";
         const data = await getReq(urlBehrend);
+        console.log(data);
         return res.send(data);
     } catch (error) {
-        res.status(500).send('Error getting data');
+        res.status(500).send('Error getting data', error);
     }
 });
 

@@ -197,7 +197,7 @@ app.post('/turnos', async (req, res) => {
         const body = req.body;
         const urlBehrend = "https://main-lahv.onrender.com/turnos";
         const response = await postReq(body, urlBehrend);
-        return res.send(response);
+        return res.send(response.data);
     } catch (error) {
         res.status(500).send('Error posting data: ', error.message);
     }

@@ -124,7 +124,7 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
         formData.append('file', fs.createReadStream(req.file.path));
         console.log(file);
         console.log(typeof(formData),formData)
-        var data = await postReq(formData, urlSuch, {
+        var predict = await postReq(formData, urlSuch, {
             headers: {
                 ...formData.getHeaders()
             }
@@ -163,7 +163,7 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
             console.log("Error insertando el archivo: ", error_insert);
             res.status(500).send('Error inserting data');
         }
-        res.send(data);
+        res.send(predict);
     });
     // }
     fs.unlinkSync(req.file.path);

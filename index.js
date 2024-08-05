@@ -250,11 +250,13 @@ app.post('/login', async (req,res)=> {
         .select()
         .eq('mail_usuarios', body.mail);
     
+    if(!data[0]){
+        res.status(500).send('User not found');    }
     if (bcrypt.compareSync(body.password, data[0].password_usuarios)){
         res.send("Login succesful");
     }
     else{
-        res.send("Password or user incorrect");
+        res.send("Password incorrect");
     }
     if (error) {
         res.status(500).send('Error inserting data');

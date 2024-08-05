@@ -51,4 +51,20 @@ Content-Type: application/json
 
 ###
 GET http://localhost:3000/userURL/1
-      
+
+### 
+POST http://localhost:3000/signup
+Content-Type: application/json
+
+{
+    "mail": "hola1@gmail.com",
+    "password": "1234"
+}
+### 
+POST http://healthy-back.vercel.app/login
+Content-Type: application/json
+
+{
+    "mail": "hola12@gmail.com",
+    "password": "1234"
+}

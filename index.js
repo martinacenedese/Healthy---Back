@@ -226,6 +226,40 @@ app.get('/userURL/:user', async (req, res) => {
     }
 })
 
+app.post('/signup', async (req,res)=> {
+    const body = req.body;
+    console.log(body.password, body.mail);
+    const password = await bcrypt.hash(body.password, 10);
+    const error_insert = await insertToSupabase("Usuarios", {
+        password_usuarios: password,
+        mail_usuarios: body.mail
+    })
+    console.log(error_insert);
+    if (error_insert.error) {
+        return res.status(500).send('Error posting data: '+ error_insert);
+    }
+    else {
+        return res.send(`User created successfully.`);
+    }
+})
+
+app.post('/login', async (req,res)=> {
+    const body = req.body;
+    const { data, error } = await supabase
+        .from('Usuarios')
+        .select()
+        .eq('mail_usuarios', body.mail);
+    
+    if (bcrypt.compareSync(body.password, data[0].password_usuarios)){
+        res.send("Login succesful");
+    }
+    else{
+        res.send("Password or user incorrect");
+    }
+    if (error) {
+        res.status(500).send('Error inserting data');
+    }
+})
 app.listen(3000, () => {
     console.log("Server running on port 3000");
 });

@@ -6,6 +6,23 @@ import cors from "cors";
 import dotenv from 'dotenv'
 import axios from "axios";
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+
+const jwt = require('jsonwebtoken');
+
+// Crear un token
+const token = jwt.sign({ some: 'payload' }, 'secret', { algorithm: 'HS256' });
+
+// Verificar un token
+jwt.verify(token, 'secret', (err, decoded) => {
+  if (err) {
+    console.log('Error verifying token:', err);
+  } else {
+    console.log('Decoded token:', decoded);
+  }
+});
+
+
 dotenv.config();
 const supabaseUrl = 'https://rjujpbbzlfzfemavnumo.supabase.co';
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqdWpwYmJ6bGZ6ZmVtYXZudW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxNTg2MzE5OCwiZXhwIjoyMDMxNDM5MTk4fQ.9GoC2ZHaoV5gjq_Y0H84FQ_cbhhkRzFSiIWmTeQG-RU";
@@ -231,6 +248,7 @@ app.post('/signup', async (req,res)=> {
     console.log(body.password, body.mail);
     const password = await bcrypt.hash(body.password, 10);
     const error_insert = await insertToSupabase("Usuarios", {
+        nombre_usuarios: body.nombre,
         password_usuarios: password,
         mail_usuarios: body.mail
     })

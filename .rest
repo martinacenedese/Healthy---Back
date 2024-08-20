@@ -68,3 +68,13 @@ Content-Type: application/json
     "mail": "hola12@gmail.com",
     "password": "1234"
 }
+###
+POST http://localhost:3000/login
+Content-Type: application/json
+
+{
+    "name": "Lucas",
+    "mail": "lucas.behrend2006@gmail.com",
+    "password": "lucasbehrend2006"
+
+}

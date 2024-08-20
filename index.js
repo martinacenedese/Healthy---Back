@@ -2,28 +2,23 @@ import express, { text } from 'express';
 import multer from 'multer';
 import { createClient, lockInternals } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
-import cors from "cors";
-import dotenv from 'dotenv'
-import axios from "axios";
+import cors from 'cors';
+import axios from 'axios';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-
-const jwt = require('jsonwebtoken');
+import 'dotenv/config';
 
 // Crear un token
-const token = jwt.sign({ some: 'payload' }, 'secret', { algorithm: 'HS256' });
+//const token = jwt.sign({ some: 'payload' }, 'secret', { algorithm: 'HS256' });
 
 // Verificar un token
-jwt.verify(token, 'secret', (err, decoded) => {
-  if (err) {
-    console.log('Error verifying token:', err);
-  } else {
-    console.log('Decoded token:', decoded);
-  }
-});
-
-
-dotenv.config();
+// jwt.verify(token, 'secret', (err, decoded) => {
+//   if (err) {
+//     console.log('Error verifying token:', err);
+//   } else {
+//     console.log('Decoded token:', decoded);
+//   }
+// });
 const supabaseUrl = 'https://rjujpbbzlfzfemavnumo.supabase.co';
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqdWpwYmJ6bGZ6ZmVtYXZudW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxNTg2MzE5OCwiZXhwIjoyMDMxNDM5MTk4fQ.9GoC2ZHaoV5gjq_Y0H84FQ_cbhhkRzFSiIWmTeQG-RU";
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -31,8 +26,6 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const app = express();
 // Cuales URL estan permitidas hacer req.
 const allowedOrigins = ['http://localhost:5173', 'https://josephfiter.online', "http://localhost:3000"];
-
-// app.use(cors(corsOptions));
 
 app.use(cors({
     origin: "*",
@@ -43,7 +36,6 @@ app.use(cors({
 })
 );
 app.set("trust proxy", 1);
-//pp.options('*', cors());
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
@@ -136,11 +128,9 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
     const publicURL = await uploadFileToSupabase(bucketName, file.buffer, uniqueFileName, file.mimetype);
 
     if (!publicURL) {
-        //aca hay un problema
         res.status(500).send('Error uploading file to Supabase.');
     }
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-    //Cambiar por seguridad
     const error_insert = await insertToSupabase("Estudios", {
         archivo_estudios: publicURL,
         tipo_estudios: body.tipo,
@@ -177,7 +167,6 @@ app.post('/historial', async (req, res) => {
         id_usuario: body.user,
         id_estudios: body.estudios
     })
-    // res.send()
     const error_insert = await insertToSupabase("Historial Medico", {
         punto_historialmedico: body.punto,
         fecha_historialmedico: body.date,
@@ -221,15 +210,11 @@ app.post('/turnos', async (req, res) => {
 });
 
 app.get('/turnos', async (req, res) => {
-    // try {
         const user = req.params.user;
         const urlBehrend = "https://main-lahv.onrender.com/turnos";
         const data = await getReq(urlBehrend);
         console.log(data);
         return res.send(data.data);
-    // } catch (error) {
-    //     res.status(500).send('Error getting data', error);
-    // }
 });
 
 app.get('/userURL/:user', async (req, res) => {
@@ -263,6 +248,9 @@ app.post('/signup', async (req,res)=> {
 
 app.post('/login', async (req,res)=> {
     const body = req.body;
+    const name = req.name;
+    //const password = req.password;
+    const user = {nombre: name};
     const { data, error } = await supabase
         .from('Usuarios')
         .select()
@@ -270,8 +258,10 @@ app.post('/login', async (req,res)=> {
     
     if(!data[0]){
         res.status(500).send('User not found');    }
-    if (bcrypt.compareSync(body.password, data[0].password_usuarios)){
+    if (bcrypt.compareSync(req.password, data[0].password_usuarios)){
         res.send("Login succesful");
+        const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET);
+        res.json({accessToken: accessToken});
     }
     else{
         res.send("Password incorrect");

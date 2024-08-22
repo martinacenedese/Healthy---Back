@@ -274,7 +274,7 @@ app.post('/login', async (req,res)=> {
     let compared = await bcrypt.compareSync(password, data[0].password_usuarios);
     if (compared){
         const accessToken = jwt.sign(name, process.env.ACCESS_TOKEN_SECRET);
-        res.json({accessToken: accessToken});
+        res.json(accessToken);
     }
     else{
         res.send("Password incorrect");

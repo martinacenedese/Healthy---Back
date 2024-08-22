@@ -209,6 +209,28 @@ app.post('/turnos', async (req, res) => {
     }
 });
 
+app.post('/electrocardiograma', async (req, res) => {
+    try {
+        const body = req.body;
+        const urlBehrend = "http://localhost:3000/electrocardiograma";
+        const response = await postReq(body, urlBehrend);
+        const { error } = await supabase
+            .from('countries')
+            //cambiar por campo de diagnostico
+            .update({ diagnostico: response })
+            //asumo que hay un atributo del body id
+            .eq('id', body.id)
+        if(error.error){
+            res.status(500).send("Error insertando el diagnostico");
+        }
+        else{
+            return res.send("Diagnostico insertado correctamente");
+        }
+    } catch (error) {
+        res.status(500).send('Error posting data: ', error.message);
+    }
+});
+
 app.get('/turnos', async (req, res) => {
         const user = req.params.user;
         const urlBehrend = "https://main-lahv.onrender.com/turnos";
@@ -272,6 +294,6 @@ app.post('/login', async (req,res)=> {
         res.status(500).send('Error inserting data');
     }
 })
-app.listen(3000, () => {
+app.listen(3001, () => {
     console.log("Server running on port 3000");
 });

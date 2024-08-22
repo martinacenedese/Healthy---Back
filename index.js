@@ -262,6 +262,7 @@ app.post('/signup', async (req,res)=> {
 app.post('/login', async (req,res)=> {
     const body = req.body;
     const name = body.name;
+    console.log(name);
     const password = body.password;
     //const user = {nombre: name};
     const { data, error } = await supabase
@@ -273,7 +274,8 @@ app.post('/login', async (req,res)=> {
         res.status(500).send('User not found');    }
     let compared = await bcrypt.compareSync(password, data[0].password_usuarios);
     if (compared){
-        const accessToken = jwt.sign(name, process.env.ACCESS_TOKEN_SECRET);
+        const id = data[0].id_usuarios;
+        const accessToken = jwt.sign(id, process.env.ACCESS_TOKEN_SECRET);
         res.json(accessToken);
     }
     else{

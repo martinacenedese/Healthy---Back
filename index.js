@@ -8,17 +8,6 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
 
-// Crear un token
-//const token = jwt.sign({ some: 'payload' }, 'secret', { algorithm: 'HS256' });
-
-// Verificar un token
-// jwt.verify(token, 'secret', (err, decoded) => {
-//   if (err) {
-//     console.log('Error verifying token:', err);
-//   } else {
-//     console.log('Decoded token:', decoded);
-//   }
-// });
 const supabaseUrl = 'https://rjujpbbzlfzfemavnumo.supabase.co';
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqdWpwYmJ6bGZ6ZmVtYXZudW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxNTg2MzE5OCwiZXhwIjoyMDMxNDM5MTk4fQ.9GoC2ZHaoV5gjq_Y0H84FQ_cbhhkRzFSiIWmTeQG-RU";
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -252,14 +241,12 @@ app.get('/userURL/:user', async (req, res) => {
 
 app.post('/signup', async (req,res)=> {
     const body = req.body;
-    console.log(body.password, body.mail);
     const password = await bcrypt.hash(body.password, 10);
     const error_insert = await insertToSupabase("Usuarios", {
         nombre_usuarios: body.name,
         password_usuarios: password,
         mail_usuarios: body.mail
     })
-    console.log(error_insert);
     if (error_insert.error) {
         return res.status(500).send('Error posting data: '+ error_insert);
     }
@@ -270,7 +257,7 @@ app.post('/signup', async (req,res)=> {
 
 app.post('/login', async (req,res)=> {
     const body = req.body;
-    const name = req.name;
+    const name = body.name;
     const password = body.password;
     const user = {nombre: name};
     const { data, error } = await supabase
@@ -278,22 +265,20 @@ app.post('/login', async (req,res)=> {
         .select()
         .eq('mail_usuarios', body.mail);
     
-    console.log(password, data[0].password_usuarios);
     if(!data[0]){
         res.status(500).send('User not found');    }
     let compared = await bcrypt.compareSync(password, data[0].password_usuarios);
     if (compared){
-        console.log("OK");
         const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET);
         res.json({accessToken: accessToken});
     }
     else{
         res.send("Password incorrect");
     }
-    if (error) {
+    if (error) { 
         res.status(500).send('Error inserting data');
     }
 })
-app.listen(3001, () => {
+app.listen(3000, () => {
     console.log("Server running on port 3000");
 });

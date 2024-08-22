@@ -16,6 +16,8 @@ const app = express();
 // Cuales URL estan permitidas hacer req.
 const allowedOrigins = ['http://localhost:5173', 'https://josephfiter.online', "http://localhost:3000"];
 
+app.use(express.json());
+
 app.use(cors({
     origin: "*",
     methods: ['POST', 'PUT', 'GET', 'DELETE', 'OPTIONS', 'HEAD'],
@@ -88,7 +90,9 @@ async function userURL(id, url) {
     }
 }
 
-app.use(express.json());
+function authenticateToken (req, res, nex) {
+
+}
 
 app.get('/estudios', async (req, res) => {
     const { data, error } = await supabase
@@ -259,7 +263,7 @@ app.post('/login', async (req,res)=> {
     const body = req.body;
     const name = body.name;
     const password = body.password;
-    const user = {nombre: name};
+    //const user = {nombre: name};
     const { data, error } = await supabase
         .from('Usuarios')
         .select()
@@ -269,7 +273,7 @@ app.post('/login', async (req,res)=> {
         res.status(500).send('User not found');    }
     let compared = await bcrypt.compareSync(password, data[0].password_usuarios);
     if (compared){
-        const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET);
+        const accessToken = jwt.sign(name, process.env.ACCESS_TOKEN_SECRET);
         res.json({accessToken: accessToken});
     }
     else{

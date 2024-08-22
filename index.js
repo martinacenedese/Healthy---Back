@@ -268,7 +268,7 @@ app.post('/login', async (req,res)=> {
     const { data, error } = await supabase
         .from('Usuarios')
         .select()
-        .eq('mail_usuarios', body.mail);
+        .eq('nombre_usuarios', body.name);
     
     if(!data[0]){
         res.status(500).send('User not found');    }

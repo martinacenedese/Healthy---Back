@@ -233,7 +233,7 @@ app.post('/signup', async (req,res)=> {
     console.log(body.password, body.mail);
     const password = await bcrypt.hash(body.password, 10);
     const error_insert = await insertToSupabase("Usuarios", {
-        nombre_usuarios: body.nombre,
+        nombre_usuarios: body.name,
         password_usuarios: password,
         mail_usuarios: body.mail
     })
@@ -249,17 +249,19 @@ app.post('/signup', async (req,res)=> {
 app.post('/login', async (req,res)=> {
     const body = req.body;
     const name = req.name;
-    //const password = req.password;
+    const password = body.password;
     const user = {nombre: name};
     const { data, error } = await supabase
         .from('Usuarios')
         .select()
         .eq('mail_usuarios', body.mail);
     
+    console.log(password, data[0].password_usuarios);
     if(!data[0]){
         res.status(500).send('User not found');    }
-    if (bcrypt.compareSync(req.password, data[0].password_usuarios)){
-        res.send("Login succesful");
+    let compared = await bcrypt.compareSync(password, data[0].password_usuarios);
+    if (compared){
+        console.log("OK");
         const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET);
         res.json({accessToken: accessToken});
     }

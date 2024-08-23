@@ -90,11 +90,21 @@ async function userURL(id, url) {
     }
 }
 
-function authenticateToken (req, res, nex) {
+function authenticateToken (req, res, next) {
+    //Bearer token
+    const authHeader = req.headers['authorization']
+    const token = authHeader && authHeader.split(' ')[1]
 
+    if (token === null) return res.sendStatus(401)
+    
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err,id) => {
+        if (err) return res.sendStatus(403) //token expiration
+        req.id = id
+        next()
+    })
 }
 
-app.get('/estudios', async (req, res) => {
+app.get('/estudios', authenticateToken, async (req, res) => {
     const { data, error } = await supabase
         .from('Estudios')
         .select('*');
@@ -103,13 +113,13 @@ app.get('/estudios', async (req, res) => {
         console.error('Error fetching data:', error.message);
         return res.status(500).send('Error fetching data');
     }
-
-    res.send(data);
+    res.send(data.filter(data => data.name === req.id.name));
 });
 
 app.post('/estudio', upload.single('file'), async (req, res) => {
     const file = req.file;
     const body = req.body;
+
     if (!file) {
         return res.status(400).send('No file uploaded.');
     }
@@ -131,11 +141,12 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
         quien_subio_estudios: body.quien_subio,
         id_usuarios: body.usuario
     });
+    
     if (error_insert) {
         console.log("Error insertando el archivo: ", error_insert);
         res.status(500).send('Error inserting data');
-
     }
+
     try {
         let formData = new FormData();
         formData.append('file', file);
@@ -147,7 +158,6 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
         console.log(error);
         res.status(500).send('Error posting data to AI');
     }
-
     res.send(`File uploaded successfully. URL: ${publicURL}`);
 });
 
@@ -174,11 +184,9 @@ app.post('/historial', async (req, res) => {
     else {
         return res.send(`Medical historia inserted successfully.`);
     }
-
-
 });
 
-app.get('/historial/:user', async (req, res) => {
+app.get('/historial', authenticateToken, async (req, res) => {
     const user = req.params.user;
     const { data, error } = await supabase
         .from('Historial Medico')
@@ -188,7 +196,7 @@ app.get('/historial/:user', async (req, res) => {
     if (error) {
         res.status(500).send('Error inserting data');
     }
-    res.send(data);
+    res.send(data.filter(data => data.name === req.id.name)); //Filtra la data donde el usuario coincida
 });
 
 app.post('/turnos', async (req, res) => {
@@ -224,15 +232,15 @@ app.post('/electrocardiograma', async (req, res) => {
     }
 });
 
-app.get('/turnos', async (req, res) => {
+app.get('/turnos', authenticateToken, async (req, res) => {
         const user = req.params.user;
         const urlBehrend = "https://main-lahv.onrender.com/turnos";
         const data = await getReq(urlBehrend);
         console.log(data);
-        return res.send(data.data);
+        return res.send(data.data.filter(data => data.name === req.id.name));
 });
 
-app.get('/userURL/:user', async (req, res) => {
+app.get('/userURL', async (req, res) => {
     try {
         const user = req.params.user;
         const url = await userURL(user, 'https://josephfiter.online');

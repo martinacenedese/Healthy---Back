@@ -57,8 +57,9 @@ POST http://localhost:3000/signup
 Content-Type: application/json
 
 {
-    "mail": "hola1@gmail.com",
-    "password": "1234"
+    "name": "Vicente",
+    "mail": "vicente@gmail.com",
+    "password": "Vicente1234"
 }
 ### 
 POST http://healthy-back.vercel.app/login
@@ -74,7 +75,10 @@ Content-Type: application/json
 
 {
     "name": "Lucas",
-    "mail": "lucas@gmail.com",
     "password": "lucasbehrend2006"
 
 }
+###
+GET http://localhost:3000/post
+Authorization: Bearer
+eyJhbGciOiJIUzI1NiJ9.MjM.BjLpOd0_vkgrKuEQsKPvWayzejPi7HSvwoSAkzFYZ1c

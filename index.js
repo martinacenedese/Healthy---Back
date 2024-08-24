@@ -137,6 +137,11 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
         res.status(500).send('Error uploading file to Supabase.');
     }
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    console.log({archivo_estudios: publicURL,
+        tipo_estudios: body.tipo,
+        fecha_estudios: body.date,
+        quien_subio_estudios: body.quien_subio,
+        id_usuarios: req.id.id});
     const error_insert = await insertToSupabase("Estudios", {
         archivo_estudios: publicURL,
         tipo_estudios: body.tipo,

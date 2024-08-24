@@ -283,7 +283,7 @@ app.post('/login', async (req,res)=> {
     let compared = await bcrypt.compareSync(password, data[0].password_usuarios);
     if (compared){
         const id = data[0].id_usuarios;
-        const accessToken = jwt.sign(id, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'});
+        const accessToken = jwt.sign({id: id}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'});
         res.json(accessToken);
     }
     else{

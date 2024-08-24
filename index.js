@@ -92,13 +92,14 @@ async function userURL(id, url) {
 
 function authenticateToken (req, res, next) {
     //Bearer token
-    const authHeader = req.headers['Authorization'];
+    const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
+    let token_limpio = token.slice(1, -1);
+ 
 
-    if (token === null) return res.sendStatus(401);
-  
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err,id) => {
-        // if (err) return res.send(err); //token expiration
+    if (token_limpio === null) return res.sendStatus(401);
+    jwt.verify(token_limpio, process.env.ACCESS_TOKEN_SECRET, (err,id) => {
+        if (err) return console.sendStatus(403); //token expiration
         req.id = id;
         next();
     })
@@ -113,7 +114,9 @@ app.get('/estudios', authenticateToken, async (req, res) => {
         console.error('Error fetching data:', error.message);
         return res.status(500).send('Error fetching data');
     }
-    res.send(data.filter(data => data.name === req.id.name));
+    console.log(data.filter(data => data.id_usuarios === req.id));
+    console.log(req.id);
+    res.send(data.filter(data => data.id_usuarios === req.id.id));
 });
 
 app.post('/estudio', upload.single('file'), async (req, res) => {
@@ -270,8 +273,9 @@ app.post('/signup', async (req,res)=> {
 app.post('/login', async (req,res)=> {
     const body = req.body;
     const name = body.name;
-    console.log(name);
+    console.log("name", name);
     const password = body.password;
+    console.log("pass", password);
     //const user = {nombre: name};
     const { data, error } = await supabase
         .from('Usuarios')
@@ -280,6 +284,7 @@ app.post('/login', async (req,res)=> {
     
     if(!data[0]){
         res.status(500).send('User not found');    }
+    console.log(data);
     let compared = await bcrypt.compareSync(password, data[0].password_usuarios);
     if (compared){
         const id = data[0].id_usuarios;

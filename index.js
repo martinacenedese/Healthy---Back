@@ -190,16 +190,16 @@ app.post('/historial', async (req, res) => {
 });
 
 app.get('/historial', authenticateToken, async (req, res) => {
-    const user = req.params.user;
     const { data, error } = await supabase
         .from('Historial Medico')
-        .select()
-        .eq('id_usuario', user);
+        .select('*');
+
 
     if (error) {
         res.status(500).send('Error inserting data');
     }
-    res.send(data.filter(data => data.id_usuarios === req.id.id)); //Filtra la data donde el usuario coincida
+    console.log(data.filter(data => data.id_usuarios === req.id.id));
+    res.send(data.filter(data => data.id_usuario === req.id.id)); //Filtra la data donde el usuario coincida
 });
 
 app.post('/turnos', async (req, res) => {

@@ -142,7 +142,7 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
         tipo_estudios: body.tipo,
         fecha_estudios: body.date,
         quien_subio_estudios: body.quien_subio,
-        id_usuarios: body.usuario
+        id_usuarios: req.id.id
     });
     
     if (error_insert) {

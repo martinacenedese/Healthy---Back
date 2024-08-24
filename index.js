@@ -164,7 +164,7 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
     res.send(`File uploaded successfully. URL: ${publicURL}`);
 });
 
-app.post('/historial', async (req, res) => {
+app.post('/historial', authenticateToken, async (req, res) => {
     const body = req.body;
     console.log(typeof (body), {
         punto_historialmedico: body.punto,
@@ -177,7 +177,7 @@ app.post('/historial', async (req, res) => {
         punto_historialmedico: body.punto,
         fecha_historialmedico: body.date,
         quien_subio_historialmedico: body.who,
-        id_usuario: body.user,
+        id_usuario: req.id.id,
         id_estudios: body.estudios
     });
 

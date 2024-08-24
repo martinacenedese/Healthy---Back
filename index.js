@@ -242,9 +242,11 @@ app.post('/electrocardiograma', async (req, res) => {
 
 app.get('/turnos', authenticateToken, async (req, res) => {
         const urlBehrend = "https://main-lahv.onrender.com/turnos";
-        const data = await getReq(urlBehrend);
-        console.log(data);
-        return res.send(data.filter(data => data.id_usuarios === req.id.id));
+        const data = await getReq('http://localhost:3001/turnos');
+        console.log("data", data.data);
+        console.log("req id", req.id.id);
+        console.log("filtered", data.data.filter(data => data.paciente === req.id.id));
+        return res.send(data.data.filter(data => parseInt(data.paciente) === req.id.id));
 });
 
 app.get('/userURL', async (req, res) => {

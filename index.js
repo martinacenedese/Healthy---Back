@@ -199,7 +199,7 @@ app.get('/historial', authenticateToken, async (req, res) => {
     if (error) {
         res.status(500).send('Error inserting data');
     }
-    res.send(data.filter(data => data.name === req.id.name)); //Filtra la data donde el usuario coincida
+    res.send(data.filter(data => data.id_usuarios === req.id.id)); //Filtra la data donde el usuario coincida
 });
 
 app.post('/turnos', async (req, res) => {
@@ -240,7 +240,7 @@ app.get('/turnos', authenticateToken, async (req, res) => {
         const urlBehrend = "https://main-lahv.onrender.com/turnos";
         const data = await getReq(urlBehrend);
         console.log(data);
-        return res.send(data.data.filter(data => data.name === req.id.name));
+        return res.send(data.data.filter(data => data.id_usuarios === req.id.id));
 });
 
 app.get('/userURL', async (req, res) => {

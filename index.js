@@ -1,4 +1,4 @@
-import express, { text } from 'express';
+import express, { json, text } from 'express';
 import multer from 'multer';
 import { createClient, lockInternals } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
@@ -16,13 +16,15 @@ const app = express();
 // Cuales URL estan permitidas hacer req.
 const allowedOrigins = ['http://localhost:5173', 'https://josephfiter.online', "http://localhost:3000"];
 
-const storage = multer.memoryStorage();
+// const storage = multer.memoryStorage();
 const upload = multer({ 
     storage: multer.memoryStorage(), // Usando memoryStorage para almacenar archivos en la memoria temporalmente
-    limits: { fileSize: 100 * 1024 * 1024}
+    limits: { fileSize: 100 * 1024 * 1024},
+    json: true,
+    boundary: 'josephfiter'
 });
-app.use(upload.any());
 
+app.use(express.json());
 // app.use(bodyParser.json({limit: "100mb"}));
 // app.use(bodyParser.urlencoded({limit: "100mb", extended: true, parameterLimit:50000}));
 app.use(cors({
@@ -104,7 +106,7 @@ function authenticateToken (req, res, next) {
 
     if (token_limpio === null) return res.sendStatus(401);
     jwt.verify(token_limpio, process.env.ACCESS_TOKEN_SECRET, (err,id) => {
-        if (err) return console.sendStatus(403); //token expiration
+        if (err) return console.status(403); //token expiration
         req.id = id;
         next();
     })
@@ -124,13 +126,14 @@ app.get('/estudios', authenticateToken, async (req, res) => {
     res.send(data.filter(data => data.id_usuarios === req.id.id));
 });
 
-app.post('/estudio', upload.single('file'),authenticateToken, async (req, res) => {
-    console.log("post estudios");
-    const file = req.file;
-    const body = req.body;
+app.post('/estudio', upload.single('file'), async (req, res) => {
 
+    console.log("post estudios");
+    const file = req.file.buffer;
+    const body = req.body;
+    console.log(file);
     if (!file) {
-        return res.status(400).send('No file uploaded.');
+        return res.status(400).json({error:'No file uploaded.'});
     }
 
     const bucketName = 'estudios_bucket';
@@ -173,6 +176,7 @@ app.post('/estudio', upload.single('file'),authenticateToken, async (req, res) =
         res.status(500).send('Error posting data to AI');
     }
     res.send(`File uploaded successfully. URL: ${publicURL}`);
+
 });
 
 app.post('/historial', authenticateToken, async (req, res) => {
@@ -284,9 +288,10 @@ app.post('/signup', async (req,res)=> {
 })
 
 app.post('/login', async (req,res)=> {
+    console.log("login");
+    console.log("name", req);
     const body = req.body;
     const name = body.name;
-    console.log("name", name);
     const password = body.password;
     console.log("pass", password);
     //const user = {nombre: name};

@@ -207,9 +207,10 @@ app.get('/historial', authenticateToken, async (req, res) => {
     res.send(data.filter(data => data.id_usuario === req.id.id)); //Filtra la data donde el usuario coincida
 });
 
-app.post('/turnos', async (req, res) => {
+app.post('/turnos', authenticateToken, async (req, res) => {
     try {
         const body = req.body;
+        body.paciente = req.id.id;
         const urlBehrend = "https://main-lahv.onrender.com/turnos";
         const response = await postReq(body, urlBehrend);
         return res.send(response.data);

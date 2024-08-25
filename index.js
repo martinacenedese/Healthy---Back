@@ -20,8 +20,7 @@ const allowedOrigins = ['http://localhost:5173', 'https://josephfiter.online', "
 const upload = multer({ 
     storage: multer.memoryStorage(), // Usando memoryStorage para almacenar archivos en la memoria temporalmente
     limits: { fileSize: 100 * 1024 * 1024},
-    json: true,
-    boundary: 'josephfiter'
+    json: true
 });
 
 app.use(express.json());
@@ -89,8 +88,9 @@ async function getReq(url) {
 //funcion para generar link al medico.
 async function userURL(id, url) {
     try {
-        const hash = await bcrypt.hash(id, 10);
-        return url + '/' + hash;
+        const hash = await bcrypt.hash(id.toString(), 10);
+        const link = {url: url + '/' + hash};
+        return JSON.stringify(link);
     } catch (error) {
         console.log('Error userURL, details: ' + error.message);
         throw error;
@@ -126,7 +126,7 @@ app.get('/estudios', authenticateToken, async (req, res) => {
     res.send(data.filter(data => data.id_usuarios === req.id.id));
 });
 
-app.post('/estudio', upload.single('file'), async (req, res) => {
+app.post('/estudio', upload.single('file'), authenticateToken, async (req, res) => {
 
     console.log("post estudios");
     const file = req.file.buffer;
@@ -143,7 +143,7 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
     const publicURL = await uploadFileToSupabase(bucketName, file.buffer, uniqueFileName, file.mimetype);
 
     if (!publicURL) {
-        res.status(500).send('Error uploading file to Supabase.');
+        return res.status(500).send('Error uploading file to Supabase.');
     }
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     console.log({archivo_estudios: publicURL,
@@ -161,7 +161,7 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
     
     if (error_insert) {
         console.log("Error insertando el archivo: ", error_insert);
-        res.status(500).send('Error inserting data');
+        return res.status(500).send('Error inserting data');
     }
 
     try {
@@ -173,9 +173,9 @@ app.post('/estudio', upload.single('file'), async (req, res) => {
         return res.send(data);
     } catch (error) {
         console.log(error);
-        res.status(500).send('Error posting data to AI');
+        return res.status(500).send('Error posting data to AI');
     }
-    res.send(`File uploaded successfully. URL: ${publicURL}`);
+    return res.send(`File uploaded successfully. URL: ${publicURL}`);
 
 });
 
@@ -261,6 +261,7 @@ app.get('/turnos', authenticateToken, async (req, res) => {
 });
 
 app.get('/userURL', authenticateToken, async (req, res) => {
+    console.log("useer url");
     try {
         const user = req.id.id;
         const url = await userURL(user, 'https://josephfiter.online');

@@ -7,17 +7,24 @@ import axios from 'axios';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
+import bodyParser from 'body-parser';
 
 const supabaseUrl = 'https://rjujpbbzlfzfemavnumo.supabase.co';
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqdWpwYmJ6bGZ6ZmVtYXZudW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxNTg2MzE5OCwiZXhwIjoyMDMxNDM5MTk4fQ.9GoC2ZHaoV5gjq_Y0H84FQ_cbhhkRzFSiIWmTeQG-RU";
 const supabase = createClient(supabaseUrl, supabaseKey);
-
 const app = express();
 // Cuales URL estan permitidas hacer req.
 const allowedOrigins = ['http://localhost:5173', 'https://josephfiter.online', "http://localhost:3000"];
 
-app.use(express.json());
+const storage = multer.memoryStorage();
+const upload = multer({ 
+    storage: multer.memoryStorage(), // Usando memoryStorage para almacenar archivos en la memoria temporalmente
+    limits: { fileSize: 100 * 1024 * 1024}
+});
+app.use(upload.any());
 
+// app.use(bodyParser.json({limit: "100mb"}));
+// app.use(bodyParser.urlencoded({limit: "100mb", extended: true, parameterLimit:50000}));
 app.use(cors({
     origin: "*",
     methods: ['POST', 'PUT', 'GET', 'DELETE', 'OPTIONS', 'HEAD'],
@@ -27,8 +34,6 @@ app.use(cors({
 })
 );
 app.set("trust proxy", 1);
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
 
 async function insertToSupabase(table, values) {
     const error = await supabase
@@ -119,7 +124,8 @@ app.get('/estudios', authenticateToken, async (req, res) => {
     res.send(data.filter(data => data.id_usuarios === req.id.id));
 });
 
-app.post('/estudio', upload.single('file'), async (req, res) => {
+app.post('/estudio', upload.single('file'),authenticateToken, async (req, res) => {
+    console.log("post estudios");
     const file = req.file;
     const body = req.body;
 
@@ -250,9 +256,9 @@ app.get('/turnos', authenticateToken, async (req, res) => {
         return res.send(data.data.filter(data => parseInt(data.paciente) === req.id.id));
 });
 
-app.get('/userURL', async (req, res) => {
+app.get('/userURL', authenticateToken, async (req, res) => {
     try {
-        const user = req.params.user;
+        const user = req.id.id;
         const url = await userURL(user, 'https://josephfiter.online');
         console.log(url);
         res.send(url);

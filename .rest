@@ -74,11 +74,10 @@ POST http://localhost:3000/login
 Content-Type: application/json
 
 {
-    "name": "Lucas",
-    "password": "lucasbehrend2006"
+    "name": "Vicente",
+    "password": "Vicente1234"
 
 }
 ###
-GET http://localhost:3000/post
-Authorization: Bearer
-eyJhbGciOiJIUzI1NiJ9.MjM.BjLpOd0_vkgrKuEQsKPvWayzejPi7HSvwoSAkzFYZ1c
+GET http://localhost:3000/nombre
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjMsImlhdCI6MTcyNDgwNjU1MCwiZXhwIjoxNzI0ODEwMTUwfQ.8_FGRRhQx7X2nerMwGUC3zYSzBvToIjg2_pMGXr29zY

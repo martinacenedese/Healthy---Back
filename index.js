@@ -121,24 +121,19 @@ app.get('/estudios', authenticateToken, async (req, res) => {
         console.error('Error fetching data:', error.message);
         return res.status(500).send('Error fetching data');
     }
-    console.log(data.filter(data => data.id_usuarios === req.id));
-    console.log(req.id);
     res.send(data.filter(data => data.id_usuarios === req.id.id));
 });
 
 app.post('/estudio', upload.single('file'), authenticateToken, async (req, res) => {
 
-    console.log("post estudios");
     const file = req.file.buffer;
     const body = req.body;
-    console.log(file);
     if (!file) {
         return res.status(400).json({error:'No file uploaded.'});
     }
 
     const bucketName = 'estudios_bucket';
     const uniqueFileName = `${uuidv4()}-${file.originalname}`; // Generate a unique file name
-    console.log("antes public url");
     // The function returns the publicURL with that params.
     const publicURL = await uploadFileToSupabase(bucketName, file.buffer, uniqueFileName, file.mimetype);
 
@@ -146,11 +141,6 @@ app.post('/estudio', upload.single('file'), authenticateToken, async (req, res) 
         return res.status(500).send('Error uploading file to Supabase.');
     }
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-    console.log({archivo_estudios: publicURL,
-        tipo_estudios: body.tipo,
-        fecha_estudios: body.date,
-        quien_subio_estudios: body.quien_subio,
-        id_usuarios: req.id.id});
     const error_insert = await insertToSupabase("Estudios", {
         archivo_estudios: publicURL,
         tipo_estudios: body.tipo,
@@ -160,7 +150,6 @@ app.post('/estudio', upload.single('file'), authenticateToken, async (req, res) 
     });
     
     if (error_insert) {
-        console.log("Error insertando el archivo: ", error_insert);
         return res.status(500).send('Error inserting data');
     }
 
@@ -169,7 +158,6 @@ app.post('/estudio', upload.single('file'), authenticateToken, async (req, res) 
         formData.append('file', file);
         const urlSuch = 'https://hjuyhjiuhjdsadasda-healthy.hf.space/upload-image/';
         const data = await postReq(formData, urlSuch);
-        console.log("req ia: ", data);
         return res.send(data);
     } catch (error) {
         console.log(error);
@@ -181,13 +169,6 @@ app.post('/estudio', upload.single('file'), authenticateToken, async (req, res) 
 
 app.post('/historial', authenticateToken, async (req, res) => {
     const body = req.body;
-    console.log(typeof (body), {
-        punto_historialmedico: body.punto,
-        fecha_historialmedico: body.date,
-        quien_subio_historialmedico: body.who,
-        id_usuario: body.user,
-        id_estudios: body.estudios
-    })
     const error_insert = await insertToSupabase("Historial Medico", {
         punto_historialmedico: body.punto,
         fecha_historialmedico: body.date,
@@ -254,18 +235,16 @@ app.post('/electrocardiograma', async (req, res) => {
 app.get('/turnos', authenticateToken, async (req, res) => {
         const urlBehrend = "https://main-lahv.onrender.com/turnos";
         const data = await getReq(urlBehrend);
-        console.log("data", data.data);
-        console.log("req id", req.id.id);
-        console.log("filtered", data.data.filter(data => data.paciente === req.id.id));
+        // console.log("data", data.data);
+        // console.log("req id", req.id.id);
+        // console.log("filtered", data.data.filter(data => data.paciente === req.id.id));
         return res.send(data.data.filter(data => parseInt(data.paciente) === req.id.id));
 });
 
 app.get('/userURL', authenticateToken, async (req, res) => {
-    console.log("useer url");
     try {
         const user = req.id.id;
         const url = await userURL(user, 'https://josephfiter.online');
-        console.log(url);
         res.send(url);
     } catch (error) {
         console.log(error);
@@ -289,13 +268,10 @@ app.post('/signup', async (req,res)=> {
 })
 
 app.post('/login', async (req,res)=> {
-    console.log("login");
-    console.log("name", req);
     const body = req.body;
     const name = body.name;
     const password = body.password;
-    console.log("pass", password);
-    //const user = {nombre: name};
+
     const { data, error } = await supabase
         .from('Usuarios')
         .select()
@@ -303,7 +279,6 @@ app.post('/login', async (req,res)=> {
     
     if(!data[0]){
         res.status(500).send('User not found');    }
-    console.log(data);
     let compared = await bcrypt.compareSync(password, data[0].password_usuarios);
     if (compared){
         const id = data[0].id_usuarios;
@@ -317,6 +292,19 @@ app.post('/login', async (req,res)=> {
         res.status(500).send('Error inserting data');
     }
 })
+
+app.get('/nombre', authenticateToken, async (req,res) => {
+    const id = req.id.id;
+
+    const { data, error } = await supabase
+        .from('Usuarios')
+        .select('nombre_usuarios')
+        .eq('id_usuarios', id);
+    console.log(data);
+    return res.send(data);
+    
+})
+
 app.listen(3000, () => {
     console.log("Server running on port 3000");
 });

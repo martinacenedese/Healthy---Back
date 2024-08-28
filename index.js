@@ -106,7 +106,7 @@ function authenticateToken (req, res, next) {
 
     if (token_limpio === null) return res.sendStatus(401);
     jwt.verify(token_limpio, process.env.ACCESS_TOKEN_SECRET, (err,id) => {
-        if (err) return console.status(403); //token expiration
+        if (err) return res.status(403); //token expiration
         req.id = id;
         next();
     })

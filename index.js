@@ -16,7 +16,6 @@ const app = express();
 // Cuales URL estan permitidas hacer req.
 const allowedOrigins = ['http://localhost:5173', 'https://josephfiter.online', "http://localhost:3000"];
 
-// const storage = multer.memoryStorage();
 const upload = multer({ 
     storage: multer.memoryStorage(), // Usando memoryStorage para almacenar archivos en la memoria temporalmente
     limits: { fileSize: 100 * 1024 * 1024},
@@ -24,16 +23,15 @@ const upload = multer({
 });
 
 app.use(express.json());
-// app.use(bodyParser.json({limit: "100mb"}));
-// app.use(bodyParser.urlencoded({limit: "100mb", extended: true, parameterLimit:50000}));
+
 app.use(cors({
     origin: "*",
     methods: ['POST', 'PUT', 'GET', 'DELETE', 'OPTIONS', 'HEAD'],
     credentials: true,
     allowedHeaders: '*'
-
 })
 );
+
 app.set("trust proxy", 1);
 
 async function insertToSupabase(table, values) {
@@ -42,6 +40,7 @@ async function insertToSupabase(table, values) {
         .insert(values);
     return error;
 }
+
 async function uploadFileToSupabase(bucketName, fileBuffer, fileName, contentType) {
     try {
         // Upload file
@@ -55,7 +54,6 @@ async function uploadFileToSupabase(bucketName, fileBuffer, fileName, contentTyp
         if (error) {
             console.error('Error uploading file:', error);
         }
-
         // Return the public URL of the uploaded file
         const publicURL = await supabase.storage.from(bucketName).createSignedUrl(fileName, 31536000000);
         return publicURL.data.signedUrl;
@@ -85,25 +83,12 @@ async function getReq(url) {
     }
 }
 
-//funcion para generar link al medico.
-async function userURL(id, url) {
-    try {
-        const hash = await bcrypt.hash(id.toString(), 10);
-        const link = {url: url + '/' + hash};
-        return JSON.stringify(link);
-    } catch (error) {
-        console.log('Error userURL, details: ' + error.message);
-        throw error;
-    }
-}
-
 function authenticateToken (req, res, next) {
     //Bearer token
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     let token_limpio = token.slice(1, -1);
  
-
     if (token_limpio === null) return res.sendStatus(401);
     jwt.verify(token_limpio, process.env.ACCESS_TOKEN_SECRET, (err,id) => {
         if (err) return res.status(403); //token expiration
@@ -128,6 +113,7 @@ app.post('/estudio', upload.single('file'), authenticateToken, async (req, res) 
 
     const file = req.file.buffer;
     const body = req.body;
+
     if (!file) {
         return res.status(400).json({error:'No file uploaded.'});
     }
@@ -190,11 +176,9 @@ app.get('/historial', authenticateToken, async (req, res) => {
         .from('Historial Medico')
         .select('*');
 
-
     if (error) {
         res.status(500).send('Error inserting data');
     }
-    console.log(data.filter(data => data.id_usuarios === req.id.id));
     res.send(data.filter(data => data.id_usuario === req.id.id)); //Filtra la data donde el usuario coincida
 });
 
@@ -216,7 +200,7 @@ app.post('/electrocardiograma', async (req, res) => {
         const urlBehrend = "http://localhost:3000/electrocardiograma";
         const response = await postReq(body, urlBehrend);
         const { error } = await supabase
-            .from('countries')
+            .from('Estudios')
             //cambiar por campo de diagnostico
             .update({ diagnostico: response })
             //asumo que hay un atributo del body id
@@ -235,9 +219,6 @@ app.post('/electrocardiograma', async (req, res) => {
 app.get('/turnos', authenticateToken, async (req, res) => {
         const urlBehrend = "https://main-lahv.onrender.com/turnos";
         const data = await getReq(urlBehrend);
-        // console.log("data", data.data);
-        // console.log("req id", req.id.id);
-        // console.log("filtered", data.data.filter(data => data.paciente === req.id.id));
         return res.send(data.data.filter(data => parseInt(data.paciente) === req.id.id));
 });
 
@@ -300,9 +281,7 @@ app.get('/nombre', authenticateToken, async (req,res) => {
         .from('Usuarios')
         .select('nombre_usuarios')
         .eq('id_usuarios', id);
-    console.log(data);
     return res.send(data);
-    
 })
 
 app.listen(3000, () => {

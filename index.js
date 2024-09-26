@@ -284,6 +284,33 @@ app.get('/nombre', authenticateToken, async (req,res) => {
     return res.send(data);
 })
 
+app.get('/perfil', authenticateToken, async (req, res) => {
+    const { data, error } = await supabase
+        .from('Perfil')
+        .select('*');
+
+    if (error) {
+        res.status(500).send('Error inserting data');
+    }
+    res.send(data.filter(data => data.id_usuario === req.id.id));
+});
+
+app.post('/perfil', async (req,res)=> {
+    const body = req.body;
+    const error_insert = await insertToSupabase("Perfil", {
+        peso_perfil: body.peso,
+        enfermedadescronicas_perfil: body.enfermedades,
+        tiposangre_perfil: body.sangre,
+        médicocabecera_perfil: body.medico,
+        nmatricula_perfil: body.matricula,
+        obrasocial_perfil:body.obra,
+        plan_perfil: body.plan
+    })
+    if (error_insert.error) {
+        return res.status(500).send('Error posting data: '+ error_insert);
+    }
+})
+
 app.listen(3000, () => {
     console.log("Server running on port 3000");
 });

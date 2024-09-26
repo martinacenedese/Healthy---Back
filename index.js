@@ -292,21 +292,29 @@ app.get('/perfil', authenticateToken, async (req, res) => {
     if (error) {
         res.status(500).send('Error inserting data');
     }
-    res.send(data.filter(data => data.id_usuario === req.id.id));
+    console.log(data.filter(data => data.id_usuarios === req.id.id));
+    res.send(data.filter(data => data.id_usuarios === req.id.id));
 });
 
 app.post('/perfil', async (req,res)=> {
     const body = req.body;
     const error_insert = await insertToSupabase("Perfil", {
+        nombre_perfil: body.nombre1,
+        edad_perfil: body.edad1,
+        altura_perfil: body.altura1,
+
+        
         peso_perfil: body.peso,
         enfermedadescronicas_perfil: body.enfermedades,
         tiposangre_perfil: body.sangre,
         médicocabecera_perfil: body.medico,
         nmatricula_perfil: body.matricula,
         obrasocial_perfil:body.obra,
-        plan_perfil: body.plan
+        plan_perfil: body.plan,
+        id_usuarios: 21
     })
     if (error_insert.error) {
+        console.log(error_insert);
         return res.status(500).send('Error posting data: '+ error_insert);
     }
 })

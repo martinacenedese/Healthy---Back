@@ -317,7 +317,47 @@ app.post('/perfil', async (req,res)=> {
         console.log(error_insert);
         return res.status(500).send('Error posting data: '+ error_insert);
     }
-})
+});
+
+app.post('/foto', upload.single('file'), authenticateToken, async (req, res) => {
+
+    const file = req.file.buffer;
+    const body = req.body;
+
+    if (!file) {
+        return res.status(400).json({error:'No file uploaded.'});
+    }
+
+    const bucketName = 'perfil_bucket';
+    const uniqueFileName = `${uuidv4()}-${file.originalname}`; // Generate a unique file name
+    // The function returns the publicURL with that params.
+    const publicURL = await uploadFileToSupabase(bucketName, file.buffer, uniqueFileName, file.mimetype);
+
+    if (!publicURL) {
+        return res.status(500).send('Error uploading file to Supabase.');
+    }
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    const error_insert = await insertToSupabase("Perfil", {
+        foto_perfil: publicURL
+    });
+    
+    if (error_insert) {
+        return res.status(500).send('Error inserting data');
+    }
+    return res.send(`File uploaded successfully. URL: ${publicURL}`);
+});
+
+app.get('/foto', authenticateToken, async (req, res) => {
+    const { data, error } = await supabase
+        .from('Perfil')
+        .select('*');
+
+    if (error) {
+        console.error('Error fetching data:', error.message);
+        return res.status(500).send('Error fetching data');
+    }
+    res.send(data.filter(data => data.id_usuarios === req.id.id));
+});
 
 app.listen(3000, () => {
     console.log("Server running on port 3000");

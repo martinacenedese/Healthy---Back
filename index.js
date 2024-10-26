@@ -97,6 +97,10 @@ function authenticateToken (req, res, next) {
     })
 }
 
+function generateAcessToken(id){
+    return jwt.sign({id: id}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '10m'});
+}
+
 app.get('/estudios', authenticateToken, async (req, res) => {
     const { data, error } = await supabase
         .from('Estudios')
@@ -263,8 +267,9 @@ app.post('/login', async (req,res)=> {
     let compared = await bcrypt.compareSync(password, data[0].password_usuarios);
     if (compared){
         const id = data[0].id_usuarios;
-        const accessToken = jwt.sign({id: id}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'});
-        res.json(accessToken);
+        const accessToken = generateAcessToken;
+        const refreshToken = jwt.sign({id: id}, process.env.REFRESH_TOKEN_SECRET);
+        res.json(accessToken, refreshToken);
     }
     else{
         res.send("Password incorrect");
@@ -302,8 +307,6 @@ app.post('/perfil', async (req,res)=> {
         nombre_perfil: body.nombre1,
         edad_perfil: body.edad1,
         altura_perfil: body.altura1,
-
-        
         peso_perfil: body.peso,
         enfermedadescronicas_perfil: body.enfermedades,
         tiposangre_perfil: body.sangre,
@@ -357,6 +360,12 @@ app.get('/foto', authenticateToken, async (req, res) => {
         return res.status(500).send('Error fetching data');
     }
     res.send(data.filter(data => data.id_usuarios === req.id.id));
+});
+
+let refreshTokens = [];
+
+app.post('/token',(req, res) => {
+    const refreshToken = req.body.token;
 });
 
 app.listen(3000, () => {

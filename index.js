@@ -269,6 +269,14 @@ app.post('/login', async (req,res)=> {
         const id = data[0].id_usuarios;
         const accessToken = generateAcessToken;
         const refreshToken = jwt.sign({id: id}, process.env.REFRESH_TOKEN_SECRET);
+        const error_insert = await insertToSupabase("RefreshTokens", {
+            token_refreshTokens: refreshToken,
+            id_usuario: id,
+        })
+        if (error_insert.error) {
+            console.log(error_insert);
+            return res.status(500).send('Error posting data: '+ error_insert);
+        }
         res.json(accessToken, refreshToken);
     }
     else{
@@ -362,10 +370,18 @@ app.get('/foto', authenticateToken, async (req, res) => {
     res.send(data.filter(data => data.id_usuarios === req.id.id));
 });
 
-let refreshTokens = [];
-
-app.post('/token',(req, res) => {
+app.post('/token',async(req, res) => {
     const refreshToken = req.body.token;
+    if (refreshToken == null) return res.sendStatus(401)
+
+    const { data, error } = await supabase
+        .from('RefreshTokens')
+        .select('token_refreshTokens')
+        .eq('token_refreshTokens', refreshToken);
+    if(!data[0]){
+    res.status(500).send('Token not found');
+    }
+ 
 });
 
 app.listen(3000, () => {

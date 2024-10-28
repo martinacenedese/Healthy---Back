@@ -348,9 +348,11 @@ app.post('/foto', upload.single('file'), authenticateToken, async (req, res) => 
 });
 
 app.get('/foto', authenticateToken, async (req, res) => {
+    const id = req.id.id;
     const { data, error } = await supabase
         .from('Foto')
-        .select('foto_foto');
+        .select('foto_foto')
+        .eq('id_usuarios', id);
 
     if (error) {
         console.error('Error fetching data:', error.message);

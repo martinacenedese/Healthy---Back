@@ -370,6 +370,7 @@ app.get('/foto', authenticateToken, async (req, res) => {
     res.send(data.filter(data => data.id_usuarios === req.id.id));
 });
 
+/*
 app.post('/token',async(req, res) => {
     const refreshToken = req.body.token;
     if (refreshToken == null) return res.sendStatus(401)
@@ -382,7 +383,7 @@ app.post('/token',async(req, res) => {
     res.status(500).send('Token not found');
     }
  
-});
+});*/
 
 app.listen(3000, () => {
     console.log("Server running on port 3000");

@@ -97,10 +97,6 @@ function authenticateToken (req, res, next) {
     })
 }
 
-function generateAcessToken(id){
-    return jwt.sign({id: id}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '10m'});
-}
-
 app.get('/estudios', authenticateToken, async (req, res) => {
     const { data, error } = await supabase
         .from('Estudios')
@@ -267,17 +263,8 @@ app.post('/login', async (req,res)=> {
     let compared = await bcrypt.compareSync(password, data[0].password_usuarios);
     if (compared){
         const id = data[0].id_usuarios;
-        const accessToken = generateAcessToken;
-        const refreshToken = jwt.sign({id: id}, process.env.REFRESH_TOKEN_SECRET);
-        const error_insert = await insertToSupabase("RefreshTokens", {
-            token_refreshTokens: refreshToken,
-            id_usuario: id,
-        })
-        if (error_insert.error) {
-            console.log(error_insert);
-            return res.status(500).send('Error posting data: '+ error_insert);
-        }
-        res.json(accessToken, refreshToken);
+        const accessToken = jwt.sign({id: id}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'});
+        res.json(accessToken);
     }
     else{
         res.send("Password incorrect");
@@ -315,6 +302,8 @@ app.post('/perfil', async (req,res)=> {
         nombre_perfil: body.nombre1,
         edad_perfil: body.edad1,
         altura_perfil: body.altura1,
+
+        
         peso_perfil: body.peso,
         enfermedadescronicas_perfil: body.enfermedades,
         tiposangre_perfil: body.sangre,
@@ -369,21 +358,6 @@ app.get('/foto', authenticateToken, async (req, res) => {
     }
     res.send(data.filter(data => data.id_usuarios === req.id.id));
 });
-
-/*
-app.post('/token',async(req, res) => {
-    const refreshToken = req.body.token;
-    if (refreshToken == null) return res.sendStatus(401)
-
-    const { data, error } = await supabase
-        .from('RefreshTokens')
-        .select('token_refreshTokens')
-        .eq('token_refreshTokens', refreshToken);
-    if(!data[0]){
-    res.status(500).send('Token not found');
-    }
- 
-});*/
 
 app.listen(3000, () => {
     console.log("Server running on port 3000");

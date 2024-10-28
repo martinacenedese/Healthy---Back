@@ -337,8 +337,8 @@ app.post('/foto', upload.single('file'), authenticateToken, async (req, res) => 
         return res.status(500).send('Error uploading file to Supabase.');
     }
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-    const error_insert = await insertToSupabase("Perfil", {
-        foto_perfil: publicURL
+    const error_insert = await insertToSupabase("Foto", {
+        foto_foto: publicURL
     });
     
     if (error_insert) {
@@ -349,8 +349,8 @@ app.post('/foto', upload.single('file'), authenticateToken, async (req, res) => 
 
 app.get('/foto', authenticateToken, async (req, res) => {
     const { data, error } = await supabase
-        .from('Perfil')
-        .select('*');
+        .from('Foto')
+        .select('foto_foto');
 
     if (error) {
         console.error('Error fetching data:', error.message);

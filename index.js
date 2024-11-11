@@ -129,11 +129,13 @@ app.post('/estudio', upload.single('file'), authenticateToken, async (req, res) 
         return res.status(500).send('Error uploading file to Supabase.');
     }
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    console.log(req.body);
     const error_insert = await insertToSupabase("Estudios", {
         archivo_estudios: publicURL,
         tipo_estudios: body.tipo,
         fecha_estudios: body.date,
         quien_subio_estudios: body.quien_subio,
+        diagnostico_estudios: body.diagnostico,
         id_usuarios: req.id.id
     });
     
@@ -323,7 +325,7 @@ app.post('/perfil', async (req,res)=> {
 
 app.post('/foto', upload.single('file'), authenticateToken, async (req, res) => {
 
-    const file = req.file.buffer;
+    const file = req.file;
     const body = req.body;
 
     if (!file) {

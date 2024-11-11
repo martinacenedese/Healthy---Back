@@ -267,7 +267,24 @@ app.post('/login', async (req,res)=> {
     let compared = await bcrypt.compareSync(password, data[0].password_usuarios);
     if (compared){
         const id = data[0].id_usuarios;
-        const accessToken = jwt.sign({id: id}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'});
+        const accessToken = jwt.sign({id: id}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '15m'});
+        const refreshToken = jwt.sign({id: id}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '30d'});
+
+        const { error: updateError } = await supabase
+            .from('RefreshToken')
+            .insert({ token_refreshToken: refreshToken })
+            .eq('id_usuarios', id);
+
+        if (updateError) {
+            return res.status(500).json({ message: 'Failed to store refresh token' });
+        }
+
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly:true,
+            secure: true,
+            sameSite: 'Strict',
+            maxAge: 30 * 24 * 60 * 60 * 1000
+        });
         res.json(accessToken);
     }
     else{
@@ -276,6 +293,63 @@ app.post('/login', async (req,res)=> {
     if (error) { 
         res.status(500).send('Error inserting data');
     }
+})
+
+app.post('/token', async (req,res, next) => {
+    const id = req.id.id;
+    const refreshTokenHeader = req.headers['refreshToken'];
+    const refreshToken = refreshTokenHeader && refreshTokenHeader.split(' ')[1];
+    let token_limpio = refreshToken.slice(1, -1);
+ 
+    if (token_limpio === null) return res.sendStatus(401);
+    jwt.verify(token_limpio, process.env.REFRESH_TOKEN_SECRET, (err,id) => {
+        if (err) return res.status(403); //token expiration
+        req.id = id;
+        next();
+    })
+
+    const { error: updateError } = await supabase
+            .from('RefreshToken')
+            .delete('*')
+            .eq('id_usuarios', id);
+
+    const newRefreshToken = jwt.sign({id: id}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '30d'});
+    const { error: updateError } = await supabase
+            .from('RefreshToken')
+            .insert({ token_refreshToken: newRefreshToken })
+            .eq('id_usuarios', id);
+
+        if (updateError) {
+            return res.status(500).json({ message: 'Failed to store refresh token' });
+        }
+    
+    const newAccessToken = jwt.sign({id: id}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '15m'});
+
+    res.cookie('newRefreshToken', newRefreshToken, {
+        httpOnly:true,
+        secure: true,
+        sameSite: 'Strict',
+        maxAge: 30 * 24 * 60 * 60 * 1000
+    });
+    res.json(newAccessToken);
+})
+
+app.post('/logout', async (req,res) => {
+    const id = req.id.id;
+    const refreshTokenHeader = req.headers['refreshToken'];
+    const refreshToken = refreshTokenHeader && refreshTokenHeader.split(' ')[1];
+    let token_limpio = refreshToken.slice(1, -1);
+
+    const { error: updateError } = await supabase
+            .from('RefreshToken')
+            .delete('*')
+            .eq('id_usuarios', id);
+    
+    res.clearCookie('token_limpio', token_limpio, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'Strict'
+    });
 })
 
 app.get('/nombre', authenticateToken, async (req,res) => {

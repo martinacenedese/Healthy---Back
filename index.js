@@ -89,10 +89,10 @@ function authenticateToken (req, res, next) {
     //Bearer token
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-    let token_limpio = token.slice(1, -1);
+    
  
-    if (token_limpio === null) return res.sendStatus(401);
-    jwt.verify(token_limpio, process.env.ACCESS_TOKEN_SECRET, (err,id) => {
+    if (token === null) return res.sendStatus(401);
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err,id) => {
         if (err) return res.status(403); //token expiration
         req.id = id;
         next();
@@ -223,6 +223,9 @@ app.post('/electrocardiograma', async (req, res) => {
 app.get('/turnos', authenticateToken, async (req, res) => {
         const urlBehrend = "https://main-lahv.onrender.com/turnos";
         const data = await getReq(urlBehrend);
+        if (!data || !data.data) {
+            return res.status(500).send('Error fetching turnos data');
+        }
         return res.send(data.data.filter(data => parseInt(data.paciente) === req.id.id));
 });
 
@@ -299,10 +302,9 @@ app.post('/token', async (req,res, next) => {
     const id = req.id.id;
     const refreshTokenHeader = req.headers['refreshToken'];
     const refreshToken = refreshTokenHeader && refreshTokenHeader.split(' ')[1];
-    let token_limpio = refreshToken.slice(1, -1);
  
-    if (token_limpio === null) return res.sendStatus(401);
-    jwt.verify(token_limpio, process.env.REFRESH_TOKEN_SECRET, (err,id) => {
+    if (refreshToken === null) return res.sendStatus(401);
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err,id) => {
         if (err) return res.status(403); //token expiration
         req.id = id;
         next();
@@ -338,14 +340,13 @@ app.post('/logout', async (req,res) => {
     const id = req.id.id;
     const refreshTokenHeader = req.headers['refreshToken'];
     const refreshToken = refreshTokenHeader && refreshTokenHeader.split(' ')[1];
-    let token_limpio = refreshToken.slice(1, -1);
 
     const { error: updateError } = await supabase
             .from('RefreshToken')
             .delete('*')
             .eq('id_usuarios', id);
     
-    res.clearCookie('token_limpio', token_limpio, {
+    res.clearCookie('refreshToken', {
         httpOnly: true,
         secure: true,
         sameSite: 'Strict'

@@ -275,7 +275,7 @@ app.post('/login', async (req,res)=> {
 
         const { error: updateError } = await supabase
             .from('RefreshToken')
-            .insert({ token_refreshToken: refreshToken })
+            .insert({id_usuarios: id, token_refreshToken: refreshToken })
             .eq('id_usuarios', id);
 
         if (updateError) {
@@ -285,7 +285,8 @@ app.post('/login', async (req,res)=> {
         res.cookie('refreshToken', refreshToken, {
             httpOnly:true,
             secure: true,
-            sameSite: 'Strict',
+            secure: process.env.NODE_ENV === 'production',
+            //sameSite: 'Strict',
             maxAge: 30 * 24 * 60 * 60 * 1000
         });
         res.json(accessToken);

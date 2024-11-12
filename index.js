@@ -307,7 +307,7 @@ app.post('/login', async (req,res)=> {
             res.status(500).send("Error insertando el refresh token");
         }
         else{
-            return res.send("Refresh Token insertado correctamente");
+          //  return res.send("Refresh Token insertado correctamente");
         }
 
         console.log("logiado");
@@ -329,80 +329,89 @@ app.post('/login', async (req,res)=> {
 
 app.post('/refreshToken', async (req, res) => {
     const oldRefreshToken = req.cookies['refreshToken'];
-
+  
     try {
-        console.log(oldRefreshToken);
-    
-        // Sin refresh token viejo, no autorizado
-        if (!oldRefreshToken) return res.sendStatus(401);
-        
-        // select del usuario asociado al refresh token para saber si esta el registro en la base de datos
-        const { data, error } = await supabase
+      console.log('Old Refresh Token:', oldRefreshToken);
+  
+      // Sin refresh token viejo, no autorizado
+      if (!oldRefreshToken) {
+        return res.sendStatus(401);
+      }
+  
+      // Verificar si el refresh token está en la base de datos
+      const { data: tokenData, error: fetchError } = await supabase
         .from('RefreshTokens')
         .select('*')
         .eq('token_refreshTokens', oldRefreshToken);
-
-        const id = data[0].id_usuarios;
-        console.log(id);
-
-        // Sino está el old refresh token en la base de datos entonces no tiene acceso al refresh token
-        if(!data) return res.status(500);
-
-        // Verificar el refresh token viejo
-        jwt.verify(oldRefreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, id) => {
-            // Token expirado o inválido
-            if (err) {
-                return res.status(403).json({ message: 'Token inválido o expirado' });
-            }
-        })
-        
-        // Eliminar el token antiguo
-        const { data, deleteError } = await supabase
-          .from('RefreshTokens')
-          .delete('*')
-          .eq('id_usuarios', id);
   
-        if (deleteError) {
-          return res.status(500).json({ message: 'Error al eliminar el token antiguo' });
-        }
+      if (fetchError) {
+        console.error('Error fetching refresh token:', fetchError);
+        return res.status(500).json({ message: 'Error verificando el token en la base de datos' });
+      }
   
-        // Crear un nuevo access token
-        const newAccessToken = jwt.sign({id: id}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '15m'});
-
-        // Crear un nuevo refresh token
-        const newRefreshToken = jwt.sign({id: id}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '30d'});
-
-        // Insertar el nuevo refresh token
-        const { error } = await supabase
-            .from('RefreshTokens')
-            .insert({
-                token_refreshTokens: newRefreshToken,
-                id_usuarios: id
-            });
-        
-        if(error){
-            res.status(500).send("Error insertando el refresh token");
-        }
-        else{
-            return res.send("Refresh Token insertado correctamente");
-        }
+      if (!tokenData || tokenData.length === 0) {
+        return res.status(403).json({ message: 'Refresh token no válido o no encontrado' });
+      }
   
-        // Enviar la nueva cookie con el refresh token
-        res.cookie('refreshToken', newRefreshToken, {
-            httpOnly:true,
-            secure: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 30 * 24 * 60 * 60 * 1000
+      const id = tokenData[0].id_usuarios;
+  
+      // Verificar el refresh token viejo
+      jwt.verify(oldRefreshToken, process.env.REFRESH_TOKEN_SECRET, (err) => {
+        if (err) {
+          console.error('Token inválido o expirado:', err);
+          return res.status(403).json({ message: 'Token inválido o expirado' });
+        }
+      });
+  
+      // Eliminar el token antiguo
+      const { error: deleteError } = await supabase
+        .from('RefreshTokens')
+        .delete()
+        .eq('id_usuarios', id);
+  
+      if (deleteError) {
+        console.error('Error eliminando el token antiguo:', deleteError);
+        return res.status(500).json({ message: 'Error al eliminar el token antiguo' });
+      }
+  
+      // Crear un nuevo access token
+      const newAccessToken = jwt.sign({ id }, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: '15m',
+      });
+  
+      // Crear un nuevo refresh token
+      const newRefreshToken = jwt.sign({ id }, process.env.REFRESH_TOKEN_SECRET, {
+        expiresIn: '30d',
+      });
+  
+      // Insertar el nuevo refresh token
+      const { error: insertError } = await supabase
+        .from('RefreshTokens')
+        .insert({
+          token_refreshTokens: newRefreshToken,
+          id_usuarios: id,
         });
   
-        // Responder con el nuevo access token
-        res.json(accessToken);
+      if (insertError) {
+        console.error('Error insertando el nuevo refresh token:', insertError);
+        return res.status(500).json({ message: 'Error al insertar el nuevo refresh token' });
+      }
+  
+      // Enviar la nueva cookie con el refresh token
+      res.cookie('refreshToken', newRefreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 días
+      });
+  
+      // Responder con el nuevo access token
+      return res.json({ accessToken: newAccessToken });
+    } catch (error) {
+      console.error('Error en el endpoint /refreshToken:', error);
+      return res.status(500).json({ message: 'Error interno del servidor' });
     }
-     catch (error) {
-      console.error('Error en el endpoint /token:', error);
-      res.status(500).json({ message: 'Error interno del servidor' });
-    } 
   });
+  
   
 
 app.post('/logout', async (req,res) => {

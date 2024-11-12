@@ -8,11 +8,14 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 
 const supabaseUrl = 'https://rjujpbbzlfzfemavnumo.supabase.co';
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqdWpwYmJ6bGZ6ZmVtYXZudW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxNTg2MzE5OCwiZXhwIjoyMDMxNDM5MTk4fQ.9GoC2ZHaoV5gjq_Y0H84FQ_cbhhkRzFSiIWmTeQG-RU";
 const supabase = createClient(supabaseUrl, supabaseKey);
 const app = express();
+app.use(cookieParser());
+
 // Cuales URL estan permitidas hacer req.
 const allowedOrigins = ['http://localhost:5173', 'https://josephfiter.online', "http://localhost:3000"];
 
@@ -320,12 +323,16 @@ app.post('/login', async (req,res)=> {
     }
 })
 
-app.post('/token', async (req, res) => {
+app.post('/token123', async (req, res) => {
+    console.log("token");
+    const refreshToken = req.cookies['refreshToken'];
+    console.log("elrefres:",refreshToken);
     try {
-      const id = req.id.id;
-      const refreshTokenHeader = req.headers['refreshtoken']; // Las cabeceras son case-insensitive, pero usa minúsculas por convención.
-      const refreshToken = refreshTokenHeader && refreshTokenHeader.split(' ')[1];
-  
+        console.log("token");
+      //const id = req.id.id;
+      //const refreshTokenHeader = req.headers['refreshtoken']; // Las cabeceras son case-insensitive, pero usa minúsculas por convención.
+      //const refreshToken = refreshTokenHeader && refreshTokenHeader.split(' ')[1];
+        console.log(refreshToken);
       if (!refreshToken) {
         return res.sendStatus(401); // Sin token de refresco, no autorizado
       }
@@ -345,6 +352,7 @@ app.post('/token', async (req, res) => {
           .eq('id_usuarios', decodedId);
   
         if (deleteError) {
+            console.log(deleteError);
           return res.status(500).json({ message: 'Error al eliminar el token antiguo' });
         }
   

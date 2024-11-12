@@ -25,10 +25,10 @@ const upload = multer({
 app.use(express.json());
 
 app.use(cors({
-    origin: "*",
+    origin: 'http://localhost:5173',
     methods: ['POST', 'PUT', 'GET', 'DELETE', 'OPTIONS', 'HEAD'],
     credentials: true,
-    allowedHeaders: '*'
+    allowedHeaders: ['Content-Type', 'Authorization'], // Especifica los encabezados que necesitas
 })
 );
 
@@ -279,7 +279,8 @@ app.post('/login', async (req,res)=> {
             .eq('id_usuarios', id);
 
         if (updateError) {
-            return res.status(500).json({ message: 'Failed to store refresh token' });
+            console.log(updateError);
+            //return res.status(500).json({ message: 'Failed to store refresh token' });
         }
 
         res.cookie('refreshToken', refreshToken, {
@@ -299,43 +300,70 @@ app.post('/login', async (req,res)=> {
     }
 })
 
-app.post('/token', async (req,res, next) => {
-    const id = req.id.id;
-    const refreshTokenHeader = req.headers['refreshToken'];
-    const refreshToken = refreshTokenHeader && refreshTokenHeader.split(' ')[1];
- 
-    if (refreshToken === null) return res.sendStatus(401);
-    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err,id) => {
-        if (err) return res.status(403); //token expiration
-        req.id = id;
-        next();
-    })
-
-    const { error: updateError } = await supabase
-            .from('RefreshToken')
-            .delete('*')
-            .eq('id_usuarios', id);
-
-    const newRefreshToken = jwt.sign({id: id}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '30d'});
-    const { error: updateError } = await supabase
-            .from('RefreshToken')
-            .insert({ token_refreshToken: newRefreshToken })
-            .eq('id_usuarios', id);
-
-        if (updateError) {
-            return res.status(500).json({ message: 'Failed to store refresh token' });
+app.post('/token', async (req, res) => {
+    try {
+      const id = req.id.id;
+      const refreshTokenHeader = req.headers['refreshtoken']; // Las cabeceras son case-insensitive, pero usa minúsculas por convención.
+      const refreshToken = refreshTokenHeader && refreshTokenHeader.split(' ')[1];
+  
+      if (!refreshToken) {
+        return res.sendStatus(401); // Sin token de refresco, no autorizado
+      }
+  
+      // Verificar el refresh token
+      jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, decodedId) => {
+        if (err) {
+          return res.status(403).json({ message: 'Token inválido o expirado' }); // Token expirado o inválido
         }
-    
-    const newAccessToken = jwt.sign({id: id}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '15m'});
-
-    res.cookie('newRefreshToken', newRefreshToken, {
-        httpOnly:true,
-        secure: true,
-        sameSite: 'Strict',
-        maxAge: 30 * 24 * 60 * 60 * 1000
-    });
-    res.json(newAccessToken);
-})
+  
+        req.id = decodedId;
+  
+        // Eliminar el token antiguo
+        const { error: deleteError } = await supabase
+          .from('RefreshToken')
+          .delete()
+          .eq('id_usuarios', decodedId);
+  
+        if (deleteError) {
+          return res.status(500).json({ message: 'Error al eliminar el token antiguo' });
+        }
+  
+        // Crear un nuevo refresh token
+        const newRefreshToken = jwt.sign({ id: decodedId }, process.env.REFRESH_TOKEN_SECRET, {
+          expiresIn: '30d',
+        });
+  
+        // Insertar el nuevo refresh token
+        const { error: insertError } = await supabase
+          .from('RefreshToken')
+          .insert({ id_usuarios: decodedId, token_refreshToken: newRefreshToken });
+  
+        if (insertError) {
+          return res.status(500).json({ message: 'Error al almacenar el nuevo refresh token' });
+        }
+  
+        // Crear un nuevo access token
+        const newAccessToken = jwt.sign({ id: decodedId }, process.env.ACCESS_TOKEN_SECRET, {
+          expiresIn: '15m',
+        });
+  
+        // Enviar la nueva cookie con el refresh token
+        res.cookie('newRefreshToken', newRefreshToken, {
+          httpOnly: true,
+          secure: true,
+          sameSite: 'Strict',
+          maxAge: 30 * 24 * 60 * 60 * 1000, // 30 días
+        });
+  
+        // Responder con el nuevo access token
+        res.json({ accessToken: newAccessToken });
+      });
+    } catch (error) {
+      console.error('Error en el endpoint /token:', error);
+      res.status(500).json({ message: 'Error interno del servidor' });
+    }
+  });
+  
 
 app.post('/logout', async (req,res) => {
     const id = req.id.id;

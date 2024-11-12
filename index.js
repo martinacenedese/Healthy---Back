@@ -85,21 +85,34 @@ async function getReq(url) {
     }
 }
 
-function authenticateToken (req, res, next) {
-    //Bearer token
+function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    console.log("Authorization Header:", authHeader); // Log para verificar el encabezado
+    let token = authHeader.slice(8, -1);
     
- 
-    if (token === null) return res.sendStatus(401);
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err,id) => {
-        if (err) return res.status(403); //token expiration
+    console.log("final:", token); // Log para verificar el encabezado
+
+    if (!token) {
+        console.error("Token missing");
+        return res.sendStatus(401); // Token ausente
+    }
+
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, id) => {
+        if (err) {
+            console.error("Token verification failed:", err.message);
+            return res.status(403).send("Invalid or expired token"); // Token inválido o expirado
+        }
         req.id = id;
+        console.log("Token verification succeeded. ID:", id); // Log para verificar el ID decodificado
         next();
-    })
+    });
 }
 
+
 app.get('/estudios', authenticateToken, async (req, res) => {
+    console.log("Recibiendo solicitud para /estudios");
+    console.log("ID de usuario:", req.id.id);
+
     const { data, error } = await supabase
         .from('Estudios')
         .select('*');
@@ -108,8 +121,14 @@ app.get('/estudios', authenticateToken, async (req, res) => {
         console.error('Error fetching data:', error.message);
         return res.status(500).send('Error fetching data');
     }
-    res.send(data.filter(data => data.id_usuarios === req.id.id));
+
+    console.log("Datos recibidos de la base de datos:", data);
+    const estudiosFiltrados = data.filter(estudio => estudio.id_usuarios === req.id.id);
+    console.log("Estudios filtrados:", estudiosFiltrados);
+
+    res.send(estudiosFiltrados);
 });
+
 
 app.post('/estudio', upload.single('file'), authenticateToken, async (req, res) => {
     console.log("j");
@@ -176,6 +195,7 @@ app.post('/historial', authenticateToken, async (req, res) => {
 });
 
 app.get('/historial', authenticateToken, async (req, res) => {
+    console.log("fdsdfdf");
     const { data, error } = await supabase
         .from('Historial Medico')
         .select('*');
@@ -279,10 +299,10 @@ app.post('/login', async (req,res)=> {
             .eq('id_usuarios', id);
 
         if (updateError) {
-            console.log(updateError);
+            //console.log(updateError);
             //return res.status(500).json({ message: 'Failed to store refresh token' });
         }
-
+        console.log("logiado");
         res.cookie('refreshToken', refreshToken, {
             httpOnly:true,
             secure: true,
@@ -428,7 +448,7 @@ app.post('/perfil', async (req,res)=> {
 });
 
 app.post('/foto', upload.single('file'), authenticateToken, async (req, res) => {
-
+    console.log("foto");
     const file = req.file;
     const body = req.body;
 
@@ -458,7 +478,26 @@ app.post('/foto', upload.single('file'), authenticateToken, async (req, res) => 
     return res.send(`File uploaded successfully. URL: ${publicURL}`);
 });
 
+app.get('/foto1', async (req, res) => {
+    console.log("foto");
+
+    const id = req.id.id;
+    const { data, error } = await supabase
+        .from('Foto')
+        .select('foto_foto')
+
+    if (error) {
+        console.error('Error fetching data:', error.message);
+        return res.status(500).send('Error fetching data');
+    }
+    console.log(data);
+    //res.send(data.filter(data => data.id_usuarios === req.id.id));
+    res.send(data)
+});
+
 app.get('/foto', authenticateToken, async (req, res) => {
+    console.log("foto");
+
     const id = req.id.id;
     const { data, error } = await supabase
         .from('Foto')

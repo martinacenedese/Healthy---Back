@@ -303,7 +303,7 @@ app.post('/login', async (req,res)=> {
                 id_usuarios: id
             });
         
-        if(error.error){
+        if(error){
             res.status(500).send("Error insertando el refresh token");
         }
         else{
@@ -341,64 +341,67 @@ app.post('/refreshToken', async (req, res) => {
         .from('RefreshTokens')
         .select('*')
         .eq('token_refreshTokens', oldRefreshToken);
-    
+
+        const id = data[0].id_usuarios;
+        console.log(id);
+
         // Sino está el old refresh token en la base de datos entonces no tiene acceso al refresh token
         if(!data) return res.status(500);
 
         // Verificar el refresh token viejo
-        jwt.verify(oldRefreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, decodedId) => {
+        jwt.verify(oldRefreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, id) => {
             // Token expirado o inválido
             if (err) {
                 return res.status(403).json({ message: 'Token inválido o expirado' });
-        }
-  
-        req.id = decodedId;
-  
+            }
+        })
+        
         // Eliminar el token antiguo
-        const { error: deleteError } = await supabase
+        const { data, deleteError } = await supabase
           .from('RefreshTokens')
-          .delete()
-          .eq('id_usuarios', decodedId);
+          .delete('*')
+          .eq('id_usuarios', id);
   
         if (deleteError) {
-            console.log(deleteError);
           return res.status(500).json({ message: 'Error al eliminar el token antiguo' });
         }
   
+        // Crear un nuevo access token
+        const newAccessToken = jwt.sign({id: id}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '15m'});
+
         // Crear un nuevo refresh token
-        const newRefreshToken = jwt.sign({ id: decodedId }, process.env.REFRESH_TOKEN_SECRET, {
-          expiresIn: '30d',
-        });
-  
+        const newRefreshToken = jwt.sign({id: id}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '30d'});
+
         // Insertar el nuevo refresh token
-        const { error: insertError } = await supabase
-          .from('RefreshToken')
-          .insert({ id_usuarios: decodedId, token_refreshToken: newRefreshToken });
-  
-        if (insertError) {
-          return res.status(500).json({ message: 'Error al almacenar el nuevo refresh token' });
+        const { error } = await supabase
+            .from('RefreshTokens')
+            .insert({
+                token_refreshTokens: newRefreshToken,
+                id_usuarios: id
+            });
+        
+        if(error){
+            res.status(500).send("Error insertando el refresh token");
+        }
+        else{
+            return res.send("Refresh Token insertado correctamente");
         }
   
-        // Crear un nuevo access token
-        const newAccessToken = jwt.sign({ id: decodedId }, process.env.ACCESS_TOKEN_SECRET, {
-          expiresIn: '15m',
-        });
-  
         // Enviar la nueva cookie con el refresh token
-        res.cookie('newRefreshToken', newRefreshToken, {
-          httpOnly: true,
-          secure: true,
-          sameSite: 'Strict',
-          maxAge: 30 * 24 * 60 * 60 * 1000, // 30 días
+        res.cookie('refreshToken', newRefreshToken, {
+            httpOnly:true,
+            secure: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 30 * 24 * 60 * 60 * 1000
         });
   
         // Responder con el nuevo access token
-        res.json({ accessToken: newAccessToken });
-      });
-    } catch (error) {
+        res.json(accessToken);
+    }
+     catch (error) {
       console.error('Error en el endpoint /token:', error);
       res.status(500).json({ message: 'Error interno del servidor' });
-    }
+    } 
   });
   
 

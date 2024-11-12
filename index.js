@@ -28,7 +28,7 @@ const upload = multer({
 app.use(express.json());
 
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: 'https://fronproyecto5.vercel.app',
     methods: ['POST', 'PUT', 'GET', 'DELETE', 'OPTIONS', 'HEAD'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'], // Especifica los encabezados que necesitas

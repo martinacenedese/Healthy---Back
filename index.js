@@ -28,7 +28,7 @@ const upload = multer({
 app.use(express.json());
 
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: 'https://fronproyecto5.vercel.app',
     methods: ['POST', 'PUT', 'GET', 'DELETE', 'OPTIONS', 'HEAD'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'], // Especifica los encabezados que necesitas
@@ -293,7 +293,7 @@ app.post('/login', async (req,res)=> {
     let compared = await bcrypt.compareSync(password, data[0].password_usuarios);
     if (compared){
         const id = data[0].id_usuarios;
-        const accessToken = jwt.sign({id: id}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '2m'});
+        const accessToken = jwt.sign({id: id}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '15m'});
         const refreshToken = jwt.sign({id: id}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '30d'});
 
         const { error } = await supabase
@@ -376,7 +376,7 @@ app.post('/refreshToken', async (req, res) => {
   
       // Crear un nuevo access token
       const newAccessToken = jwt.sign({ id }, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: '2m',
+        expiresIn: '15m',
       });
   
       // Crear un nuevo refresh token
